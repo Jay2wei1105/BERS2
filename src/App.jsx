@@ -17,7 +17,10 @@ import {
     Lightbulb,
     Cpu,
     Server,
-    ChevronDown // 新增：用於下拉選單的箭頭圖示
+    ChevronDown, // 新增：用於下拉選單的箭頭圖示
+    Droplets,    // 新增：用水資料圖示
+    Activity,    // 新增：營運率圖示
+    Hotel        // 新增：旅館圖示
 } from 'lucide-react';
 import { supabase } from './lib/supabaseClient';
 
@@ -499,6 +502,44 @@ function AnalysisForm({ onComplete }) {
         serverRoom: [{ name: '', power: '' }] // 新增：資訊機房
     });
 
+    // 【新增】用水資料狀態
+    const [waterData, setWaterData] = useState({
+        // 揚水系統
+        waterTankHeight: '',  // 水塔高度 (m)
+        annualWaterUsage: '', // 年用水量 (m³/yr)
+
+        // 盥洗室
+        washroomArea: '',     // 盥洗室面積 (m²)
+        washroomYOH: '',      // 盥洗室全年營運時間 (h/yr)
+
+        // 餐廳
+        restaurantType: '',   // 餐廳類型 (選擇: 高級/平價/輕食/24hr)
+        restaurantArea: '',   // 餐廳面積 (m²)
+        restaurantYOD: '',    // 餐廳全年營運天數 (day/yr)
+
+        // 熱水設備
+        hotWaterSystem: '',   // 熱水供應設備 (選擇: 電熱/瓦斯/太陽能/熱泵)
+    });
+
+    // 【新增】營運率資料狀態
+    const [operationRates, setOperationRates] = useState({
+        elevatorOR: 0.6,      // 電梯營運率 (預設 0.6)
+        escalatorOR: 0.8,     // 電扶梯營運率 (預設 0.8)
+        buildingClassOR: 1.0, // 建築分類營運率 (從 SORi 查找)
+    });
+
+    // 【新增】旅館特殊資料（如果是旅館類建築）
+    const [hotelData, setHotelData] = useState({
+        roomCount: '',        // 飯店客房數
+        occupancyRate: '',    // 年住房率 (%)
+    });
+
+    // 【新增】醫院特殊資料（如果是醫院類建築）
+    const [hospitalData, setHospitalData] = useState({
+        bedCount: '',         // 病房床數
+        bedOccupancyRate: '', // 年占床率 (%)
+    });
+
     const [isSubmitting, setIsSubmitting] = useState(false);
 
     // 如果使用者輸入了基本資料的樓地板面積，則優先使用，否則使用空間加總
@@ -511,6 +552,26 @@ function AnalysisForm({ onComplete }) {
 
     const updateBasicInfo = (field, value) => {
         setBasicInfo(prev => ({ ...prev, [field]: value }));
+    };
+
+    // 【新增】用水資料更新函數
+    const updateWaterData = (field, value) => {
+        setWaterData(prev => ({ ...prev, [field]: value }));
+    };
+
+    // 【新增】營運率更新函數
+    const updateOperationRates = (field, value) => {
+        setOperationRates(prev => ({ ...prev, [field]: value }));
+    };
+
+    // 【新增】旅館資料更新函數
+    const updateHotelData = (field, value) => {
+        setHotelData(prev => ({ ...prev, [field]: value }));
+    };
+
+    // 【新增】醫院資料更新函數
+    const updateHospitalData = (field, value) => {
+        setHospitalData(prev => ({ ...prev, [field]: value }));
     };
 
     // 簡化後的營運時間更新
@@ -599,7 +660,19 @@ function AnalysisForm({ onComplete }) {
                 building_name: basicInfo.companyName || '未命名建築',
                 building_type: basicInfo.buildingType,
                 ac_system: equipment.ac[0]?.type || '中央空調',
-                calculated_eui: finalTotalArea ? (latestElectricityTotal / finalTotalArea).toFixed(2) : '0'
+                calculated_eui: finalTotalArea ? (latestElectricityTotal / finalTotalArea).toFixed(2) : '0',
+
+                // 【新增】用水資料
+                water_data: waterData,
+
+                // 【新增】營運率資料
+                operation_rates: operationRates,
+
+                // 【新增】旅館資料（如適用）
+                hotel_data: (basicInfo.buildingType === 'hotel' || basicInfo.buildingType === 'accommodation') ? hotelData : null,
+
+                // 【新增】醫院資料（如適用）
+                hospital_data: basicInfo.buildingType === 'medical' ? hospitalData : null,
             };
 
             const { data, error } = await supabase
@@ -640,9 +713,15 @@ function AnalysisForm({ onComplete }) {
                             value={basicInfo.buildingType}
                             onChange={(e) => updateBasicInfo('buildingType', e.target.value)}
                             options={[
+                                { value: 'office', label: '辦公場所' },
+                                { value: 'accommodation', label: '住宿類' },
+                                { value: 'hotel', label: '旅館' },
+                                { value: 'medical', label: '醫療照護' },
+                                { value: 'retail', label: '商場百貨' },
+                                { value: 'restaurant', label: '餐飲場所' },
+                                { value: 'entertainment', label: '娛樂場所' },
+                                { value: 'finance', label: '金融證券' },
                                 { value: 'edu', label: '文教' },
-                                { value: 'finance', label: '金融' },
-                                { value: 'office', label: '辦公' }
                             ]}
                             useValueLabel
                         />
@@ -871,6 +950,199 @@ function AnalysisForm({ onComplete }) {
                         )}
                     />
                 </SectionCard>
+
+                {/* 5. 用水資料 */}
+                <SectionCard icon={<Droplets size={16} />} title="用水資料">
+                    <div className="space-y-6">
+                        {/* 揚水系統 */}
+                        <div>
+                            <h4 className="text-sm font-semibold text-white mb-3">揚水系統</h4>
+                            <div className="grid md:grid-cols-2 gap-4">
+                                <InputField
+                                    label="水塔高度 (m)"
+                                    type="number"
+                                    value={waterData.waterTankHeight}
+                                    onChange={(e) => updateWaterData('waterTankHeight', e.target.value)}
+                                    placeholder="例如: 42"
+                                />
+                                <InputField
+                                    label="年用水量 (m³/yr)"
+                                    type="number"
+                                    value={waterData.annualWaterUsage}
+                                    onChange={(e) => updateWaterData('annualWaterUsage', e.target.value)}
+                                    placeholder="例如: 221.4"
+                                />
+                            </div>
+                        </div>
+
+                        {/* 盥洗室 */}
+                        <div>
+                            <h4 className="text-sm font-semibold text-white mb-3">盥洗室</h4>
+                            <div className="grid md:grid-cols-2 gap-4">
+                                <InputField
+                                    label="盥洗室面積 (m²)"
+                                    type="number"
+                                    value={waterData.washroomArea}
+                                    onChange={(e) => updateWaterData('washroomArea', e.target.value)}
+                                />
+                                <InputField
+                                    label="全年營運時間 (h/yr)"
+                                    type="number"
+                                    value={waterData.washroomYOH}
+                                    onChange={(e) => updateWaterData('washroomYOH', e.target.value)}
+                                    placeholder="例如: 2500"
+                                />
+                            </div>
+                        </div>
+
+                        {/* 室內餐廳 */}
+                        <div>
+                            <h4 className="text-sm font-semibold text-white mb-3">室內餐廳</h4>
+                            <div className="grid md:grid-cols-3 gap-4">
+                                <SelectField
+                                    label="餐廳類型"
+                                    value={waterData.restaurantType}
+                                    onChange={(e) => updateWaterData('restaurantType', e.target.value)}
+                                    options={[
+                                        { value: '', label: '-- 請選擇 --' },
+                                        { value: 'luxury', label: '高級餐廳' },
+                                        { value: 'budget', label: '平價餐廳/小吃街' },
+                                        { value: 'cafe', label: '輕食咖啡餐廳' },
+                                        { value: '24hr', label: '24hr 速食餐廳' }
+                                    ]}
+                                    useValueLabel
+                                />
+                                <InputField
+                                    label="餐廳面積 (m²)"
+                                    type="number"
+                                    value={waterData.restaurantArea}
+                                    onChange={(e) => updateWaterData('restaurantArea', e.target.value)}
+                                />
+                                <InputField
+                                    label="全年營運天數 (day/yr)"
+                                    type="number"
+                                    value={waterData.restaurantYOD}
+                                    onChange={(e) => updateWaterData('restaurantYOD', e.target.value)}
+                                    placeholder="例如: 365"
+                                />
+                            </div>
+                        </div>
+
+                        {/* 熱水供應設備 */}
+                        <div>
+                            <h4 className="text-sm font-semibold text-white mb-3">熱水供應設備</h4>
+                            <SelectField
+                                label="熱水設備類型"
+                                value={waterData.hotWaterSystem}
+                                onChange={(e) => updateWaterData('hotWaterSystem', e.target.value)}
+                                options={[
+                                    { value: '', label: '-- 請選擇 --' },
+                                    { value: 'electric', label: '電熱式' },
+                                    { value: 'gas', label: '瓦斯式' },
+                                    { value: 'solar', label: '太陽能' },
+                                    { value: 'heatPump', label: '熱泵' },
+                                    { value: 'hybrid', label: '複合式' }
+                                ]}
+                                useValueLabel
+                            />
+                        </div>
+                    </div>
+                </SectionCard>
+
+                {/* 6. 營運率資料 */}
+                <SectionCard icon={<Activity size={16} />} title="營運率資料">
+                    <div className="space-y-4">
+                        <div className="bg-blue-500/10 border border-blue-500/30 rounded-xl p-4 mb-4">
+                            <p className="text-sm text-blue-300">
+                                💡 提示：營運率會根據建築分類自動調整。一般電梯預設 0.6，電扶梯預設 0.8。
+                            </p>
+                        </div>
+
+                        <div className="grid md:grid-cols-2 gap-4">
+                            <InputField
+                                label="電梯營運率 (Or)"
+                                type="number"
+                                step="0.01"
+                                min="0"
+                                max="1"
+                                value={operationRates.elevatorOR}
+                                onChange={(e) => updateOperationRates('elevatorOR', e.target.value)}
+                                placeholder="0.6"
+                            />
+                            <InputField
+                                label="電扶梯營運率 (Osr)"
+                                type="number"
+                                step="0.01"
+                                min="0"
+                                max="1"
+                                value={operationRates.escalatorOR}
+                                onChange={(e) => updateOperationRates('escalatorOR', e.target.value)}
+                                placeholder="0.8"
+                            />
+                        </div>
+
+                        {/* 建築分類營運率說明 */}
+                        <div className="mt-4 p-4 bg-white/5 rounded-xl border border-white/10">
+                            <p className="text-sm text-slate-300 mb-2">
+                                <strong className="text-white">建築分類營運率：</strong>
+                            </p>
+                            <ul className="text-xs text-slate-400 space-y-1 ml-4">
+                                <li>• 辦公場所：0.6 (電梯) / 0.8 (電扶梯)</li>
+                                <li>• 住宿類：0.15 (電梯) / 0.3 (電扶梯)</li>
+                                <li>• 商場百貨：0.6 (電梯) / 0.9 (電扶梯)</li>
+                                <li>• 24hr 營運建築：表列營運率 × 80%</li>
+                            </ul>
+                        </div>
+                    </div>
+                </SectionCard>
+
+                {/* 7. 旅館特殊資料 (只在建築類型為旅館時顯示) */}
+                {(basicInfo.buildingType === 'hotel' || basicInfo.buildingType === 'accommodation') && (
+                    <SectionCard icon={<Hotel size={16} />} title="旅館特殊資料">
+                        <div className="grid md:grid-cols-2 gap-4">
+                            <InputField
+                                label="飯店客房數 (NR)"
+                                type="number"
+                                value={hotelData.roomCount}
+                                onChange={(e) => updateHotelData('roomCount', e.target.value)}
+                            />
+                            <InputField
+                                label="年住房率 (%)"
+                                type="number"
+                                step="0.1"
+                                min="0"
+                                max="100"
+                                value={hotelData.occupancyRate}
+                                onChange={(e) => updateHotelData('occupancyRate', e.target.value)}
+                                placeholder="例如: 75"
+                            />
+                        </div>
+                    </SectionCard>
+                )}
+
+                {/* 8. 醫院特殊資料 (只在建築類型為醫療時顯示) */}
+                {basicInfo.buildingType === 'medical' && (
+                    <SectionCard icon={<Activity size={16} />} title="醫院特殊資料">
+                        <div className="grid md:grid-cols-2 gap-4">
+                            <InputField
+                                label="病房床數 (NB)"
+                                type="number"
+                                value={hospitalData.bedCount}
+                                onChange={(e) => updateHospitalData('bedCount', e.target.value)}
+                            />
+                            <InputField
+                                label="年占床率 (%)"
+                                type="number"
+                                step="0.1"
+                                min="0"
+                                max="100"
+                                value={hospitalData.bedOccupancyRate}
+                                onChange={(e) => updateHospitalData('bedOccupancyRate', e.target.value)}
+                                placeholder="例如: 80"
+                            />
+                        </div>
+                    </SectionCard>
+                )}
 
                 <div className="pt-4">
                     <button
