@@ -7,38 +7,14 @@ import {
     ArrowRight,
     Leaf,
     Info,
-    CheckCircle2,
-    TrendingDown,
-    Calculator,
-    Menu,
-    X,
-    Loader2,
-    History,
-    Lightbulb,
-    Cpu,
-    Server,
-    ChevronDown, // 新增：用於下拉選單的箭頭圖示
-    Droplets,    // 新增：用水資料圖示
-    Activity,    // 新增：營運率圖示
-    Hotel        // 新增：旅館圖示
-} from 'lucide-react';
+import { Zap, LayoutDashboard, FileText, CheckCircle, AlertCircle, Leaf, BarChart3, TrendingUp, TrendingDown, Minus, Download, ChevronUp, ChevronDown, User, Lock, ArrowRight, Building2, Calendar, ClipboardCheck, Scale, Calculator } from 'lucide-react';
+import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip as RechartsTooltip, ResponsiveContainer, BarChart, Bar, Legend } from 'recharts';
 import { supabase } from './lib/supabaseClient';
-
-// 导入新的 Dashboard 组件
-import {
-    MetricCard,
-    GaugeChart,
-    EfficiencyTable
-} from './components/DashboardComponents';
-
-import {
-    ComparisonRange,
-    ElectricityTrendChart,
-    EquipmentAnalysis
-} from './components/DashboardCharts';
-
-import { BERSeTable } from './components/BERSeTable';
+import { MetricCard, GaugeChart, EfficiencyTable, ComparisonRange, ElectricityTrendChart, EquipmentAnalysis } from './components/DashboardComponents';
+import { BERSeTable } from './components/BERSeTable'; // Import BERSeTable
 import { DEMO_DATA } from './data/demoData';
+import { zoneParameters } from './data/zoneParameters'; // Import zone parameters
+import { calculateBERS, lookupZoneParameter } from './utils/bersCalculator'; // Import calculator
 
 // --- 主要應用程式元件 ---
 export default function App() {
@@ -715,12 +691,112 @@ function AnalysisForm({ onComplete }) {
         const finalTotalArea = basicInfo.floorArea ? parseFloat(basicInfo.floorArea) : calculatedTotalArea;
 
         try {
+            // --- BERS 自動計算邏輯 ---
+            // 1. 將輸入空間映射為耗能分區
+            const mappedZones = spaces.map((space, index) => {
+                // 簡易映射邏輯：根據空間類型對應 BERS 分區代碼
+                let zoneCode = 'B3'; // 預設：一般辦公空間
+
+                const type = space.type || '';
+                if (type === 'meeting' || type === 'lounge' || type === 'corridor') zoneCode = 'B4'; // 次空間
+                if (type === 'lobby') zoneCode = 'B2'; // 大廳
+                if (type === 'server') zoneCode = 'N8'; // 假設機房為免評估或特殊
+                if (type === 'parking') zoneCode = 'N3'; // 停車場 (免評估)
+                if (type === 'kitchen') zoneCode = 'N1'; // 廚房 (免評估)
+
+                // 檢查是否為免評估分區 (N開頭)
+                const isExempt = zoneCode.startsWith('N');
+
+                if (isExempt) {
+                    return {
+                        type: 'exempt',
+                        code: zoneCode,
+                        name: space.name,
+                        area: parseFloat(space.area) || 0
+                    };
+                } else {
+                    // 查找分區參數 (基準為 'm')
+                    const params = lookupZoneParameter(zoneCode, 'm');
+                    const aeui = params?.airConditioningAEUI || 40;
+                    const leui = params?.lightingLEUI || 20;
+                    const eeui = params?.electricalEEUI || 10;
+                    const area = parseFloat(space.area) || 0;
+
+                    // 計算該分區預估耗電 (這只是理論值，實際總耗電由電費單決定)
+                    const estimatedElec = (aeui + leui + eeui) * area;
+
+                    return {
+                        type: 'consumption',
+                        name: space.name,
+                        zoneCode: zoneCode,
+                        area: area,
+                        aeui: aeui,
+                        leui: leui,
+                        eeui: eeui,
+                        ur: 1.0, // 城鄉係數預設 1
+                        sor: 1.0, // 營運率預設 1
+                        elec: estimatedElec, // 分區耗電量
+                        category: params?.category || '辦公場所'
+                    };
+                }
+            });
+
+            const consumption_zones = mappedZones.filter(z => z.type === 'consumption');
+            const exemption_zones = mappedZones.filter(z => z.type === 'exempt').map(z => ({
+                name: z.name,
+                area: z.area,
+                formula: `查表數值 x ${z.area}`,
+                elec: 0 // 免評估耗電暫時略過複雜計算
+            }));
+
+            // 計算耗能分區總結數據
+            const consumption_footer = {
+                assessedArea: consumption_zones.reduce((sum, z) => sum + z.area, 0),
+                totalZoneElec: consumption_zones.reduce((sum, z) => sum + z.elec, 0).toFixed(0),
+                te: latestElectricityTotal, // 實際總耗電
+                et: latestElectricityTotal, // 暫定等於總耗電
+                ep: 0,
+                eh: 0,
+                ee: 0,
+                teui: (latestElectricityTotal / finalTotalArea).toFixed(1),
+                majorEui: (latestElectricityTotal / finalTotalArea).toFixed(1)
+            };
+
+            // 2. 計算能效指標 (Energy Indicators)
+            const euiValue = latestElectricityTotal / finalTotalArea;
+            // 根據建築類型獲取基準值 (這裡簡化，假設都是辦公)
+            const benchmark = 180; // 辦公類一般基準
+            const euiMin = 80;
+            const euiMax = 250;
+
+            const energy_indicators = {
+                euiMin: euiMin,
+                euiGb: 140, // 基準值
+                euiM: 160,  // 中位值
+                euiMax: euiMax,
+                deltaEui: (euiValue - benchmark).toFixed(1),
+                euiStar: euiValue.toFixed(1),
+                ceiStar: (euiValue * 0.502).toFixed(2), // 碳排密度
+                scoreE: Math.max(0, Math.min(100, 100 - (euiValue - 100))).toFixed(1), // 簡易評分
+                level: euiValue < 100 ? '1+ 級 (鑽石級)' :
+                    euiValue < 140 ? '1 級 (黃金級)' :
+                        euiValue < 180 ? '2 級 (銀級)' :
+                            euiValue < 220 ? '3 級 (合格)' : '待改善'
+            };
+
+
             const insertPayload = {
-                // 基本資料
-                company_name: basicInfo.companyName || null,
-                address: basicInfo.address || null,
-                contact_person: basicInfo.contactPerson || null,
-                contact_email: basicInfo.contactEmail || null,
+                user_id: user.id,
+                building_name: basicInfo.buildingName,
+                basic_info: basicInfo,
+                contact_info: {
+                    name: contactInfo.name,
+                    email: contactInfo.email,
+                    phone: contactInfo.phone,
+                    company: contactInfo.company
+                },
+                name: contactInfo.name,
+                email: contactInfo.email,
                 phone: basicInfo.phone || null,
                 floor_area: finalTotalArea,
                 building_type: basicInfo.buildingType,
@@ -736,6 +812,12 @@ function AnalysisForm({ onComplete }) {
                 water_data: waterData,
                 operation_rates: operationRates,
 
+                // BERS 詳細計算結果 (新增)
+                consumption_zones: consumption_zones,
+                exemption_zones: exemption_zones,
+                energy_indicators: energy_indicators,
+                consumption_footer: consumption_footer,
+
                 // 條件性資料
                 hotel_data: (basicInfo.buildingType === 'hotel' || basicInfo.buildingType === 'accommodation') ? hotelData : null,
                 hospital_data: basicInfo.buildingType === 'medical' ? hospitalData : null,
@@ -744,12 +826,17 @@ function AnalysisForm({ onComplete }) {
                 analysis_result: {
                     total_area: finalTotalArea,
                     annual_electricity: latestElectricityTotal,
-                    eui: latestElectricityTotal / finalTotalArea,
+                    eui: euiValue,
                     carbonEmission: (latestElectricityTotal * 0.502 / 1000),
-                    calculated_at: new Date().toISOString()
+                    calculated_at: new Date().toISOString(),
+                    // 將詳細指標也放入 analysis_result 以便於 Dashboard 讀取
+                    energy_indicators: energy_indicators,
+                    consumption_zones: consumption_zones,
+                    exemption_zones: exemption_zones,
+                    consumption_footer: consumption_footer
                 },
 
-                status: 'draft'
+                status: 'completed' // 標記為完成以便 Dashboard 顯示
             };
 
             const { data, error } = await supabase
@@ -1473,11 +1560,32 @@ function Dashboard({ data, onRetry, onVerify, onDemo, loading, error, isLoggedIn
 
         const monthLabels = ['1月', '2月', '3月', '4月', '5月', '6月', '7月', '8月', '9月', '10月', '11月', '12月'];
 
-        return monthLabels.map((month, index) => ({
-            month,
-            year2023: displayData.electricity_data[index]?.[0] || 0,
-            year2024: displayData.electricity_data[index]?.[1] || 0
-        }));
+        return monthLabels.map((month, index) => {
+            const item = displayData.electricity_data[index];
+            let val1 = 0;
+            let val2 = 0;
+
+            if (Array.isArray(item)) {
+                // Demo data: [val1, val2]
+                val1 = item[0];
+                val2 = item[1];
+            } else if (item && typeof item === 'object' && item.values) {
+                // Form data: { month: '...', values: [val1, val2] }
+                val1 = item.values[0];
+                val2 = item.values[1];
+            } else if (item && typeof item === 'object') {
+                // Fallback if structure is different but still object-like?
+                // Currently form uses 'values' array.
+                // We can check if item[0] exists just in case it's an object acting like array?
+                // But safest is to reply on 'values' key for form data.
+            }
+
+            return {
+                month,
+                year2023: parseFloat(val1) || 0,
+                year2024: parseFloat(val2) || 0
+            };
+        });
     };
 
     return (
@@ -1636,32 +1744,7 @@ function Dashboard({ data, onRetry, onVerify, onDemo, loading, error, isLoggedIn
 
             {/* === 5. 設備分析（全寬）=== */}
             <EquipmentAnalysis
-                equipment={[
-                    {
-                        name: '中央空調系統 (Chiller)',
-                        efficiency: 45,
-                        rating: '一級能效',
-                        status: '優',
-                        savingPotential: '低 (已最佳化)',
-                        color: 'green'
-                    },
-                    {
-                        name: '辦公照明系統',
-                        efficiency: 18,
-                        rating: '一級能效',
-                        status: '優',
-                        savingPotential: '低',
-                        color: 'green'
-                    },
-                    {
-                        name: '電梯直連梯',
-                        efficiency: 8,
-                        rating: '三級能效',
-                        status: '高 (建議改善)',
-                        savingPotential: '高',
-                        color: 'orange'
-                    }
-                ]}
+                equipment={displayData?.equipment}
             />
 
             {/* === 6. BERSe 評估總表 === */}
