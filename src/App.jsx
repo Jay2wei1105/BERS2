@@ -1568,7 +1568,6 @@ function Dashboard({ data, onRetry, onVerify, onDemo, loading, error, isLoggedIn
             {/* === 6. BERSe 評估總表 === */}
             <BERSeTable data={displayData} />
         </div>
-        </div >
     );
 }
 
