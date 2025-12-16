@@ -42,14 +42,14 @@ export function BERSeTable({ data }) {
                 rows: [
                     { label: '建築物名稱', value: data?.building_name || '未命名' },
                     { label: '建築物地址', value: data?.basic_info?.address || '-' },
-                    { label: '總樓地板面積', value: `${data?.total_area?.toLocaleString() || 0} m²` },
-                    { label: '評估樓地板面積', value: `${data?.total_area?.toLocaleString() || 0} m²` },
-                    { label: '地上總樓層數', value: `${data?.basic_info?.floorsAbove || '-'} 層` },
-                    { label: '地下總樓層數', value: `${data?.basic_info?.floorsBelow || '-'} 層` },
-                    { label: '實際年總耗電量 (EUI)', value: `${data?.calculated_eui || 0} kWh/(m².yr)` },
-                    { label: '雨中水年利用量', value: `${data?.water_data?.rainwater || 0} m³` },
-                    { label: '其他特殊用電', value: `${data?.special_electricity || 0} kWh/(m².yr)` },
-                    { label: '城鄉係數', value: `${data?.ur_coefficient || 1.0}` },
+                    { label: '總樓地板面積', value: data?.total_area?.toLocaleString() || 0 },
+                    { label: '評估樓地板面積', value: data?.total_area?.toLocaleString() || 0 },
+                    { label: '地上總樓層數', value: data?.basic_info?.floorsAbove || '-' },
+                    { label: '地下總樓層數', value: data?.basic_info?.floorsBelow || '-' },
+                    { label: '實際年總耗電量 (EUI)', value: data?.calculated_eui || 0 },
+                    { label: '雨中水年利用量', value: data?.water_data?.rainwater || 0 },
+                    { label: '其他特殊用電', value: data?.special_electricity || 0 },
+                    { label: '城鄉係數', value: data?.ur_coefficient || 1.0 },
                     { label: '建築分類', value: getBuildingTypeName(data?.building_type) },
                     { label: '空調系統類型', value: data?.ac_system || '中央空調' },
                     { label: '評估日期', value: formatDate(data?.created_at) }
@@ -225,7 +225,7 @@ export function BERSeTable({ data }) {
                                 {section.id === 'reliability' && (
                                     <div className="overflow-x-auto">
                                         <div className="text-slate-300 mb-2 font-bold bg-white/10 p-2 rounded">
-                                            實際年總耗電量 TE 信賴度檢驗：
+                                            實際年總耗電量信賴度檢驗：
                                         </div>
                                         <table className="w-full text-sm border-collapse border border-white/20">
                                             <colgroup>
@@ -235,7 +235,7 @@ export function BERSeTable({ data }) {
                                             </colgroup>
                                             <tbody className="text-slate-200">
                                                 <tr>
-                                                    <td className="border border-white/20 p-3 bg-white/5 font-bold">年總耗電量 TE</td>
+                                                    <td className="border border-white/20 p-3 bg-white/5 font-bold">年總耗電量</td>
                                                     <td className="border border-white/20 p-3 text-right text-lg text-blue-300 font-bold">{section.rows[0].value}</td>
                                                     <td className="border border-white/20 p-3 text-center text-slate-400 font-light">{section.rows[0].unit}</td>
                                                 </tr>
