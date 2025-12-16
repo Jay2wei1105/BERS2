@@ -1324,8 +1324,15 @@ function Dashboard({ data, onRetry, onVerify, onDemo, loading, error, isLoggedIn
     const handleVerifySubmit = (e) => {
         e.preventDefault();
         onVerify?.(formState.email.trim(), formState.name.trim());
-        setShowLoginForm(false); // 登入後關閉 Modal
+        // 不在此處立即關閉，等待 verify 成功後通過 useEffect 關閉
     };
+
+    // 監聽 demo 模式狀態，若是登入成功（isDemoMode 變為 false），則關閉 Modal
+    useEffect(() => {
+        if (!isDemoMode && isLoggedIn) {
+            setShowLoginForm(false);
+        }
+    }, [isDemoMode, isLoggedIn]);
 
     const handleLogout = () => {
         onDemo?.(); // 觸發回到 Demo 模式
@@ -1562,46 +1569,47 @@ function Dashboard({ data, onRetry, onVerify, onDemo, loading, error, isLoggedIn
                 {/* === 6. BERSe 評估總表 === */}
                 <BERSeTable data={displayData} />
             </div>
-            );
+        </div>
+    );
 }
 
-            // 輔助元件
-            function GlassCard({title, desc, icon}) {
+// 輔助元件
+function GlassCard({ title, desc, icon }) {
     return (
-            <div className="group p-6 rounded-2xl bg-white/5 backdrop-blur-md border border-white/10 hover:bg-white/10 transition-all duration-300">
-                <div className="flex items-center gap-3 mb-3">
-                    <div className="p-2 rounded-lg bg-white/10 group-hover:scale-110 transition-transform">
-                        {icon}
-                    </div>
-                    <h3 className="text-lg font-bold text-white">{title}</h3>
+        <div className="group p-6 rounded-2xl bg-white/5 backdrop-blur-md border border-white/10 hover:bg-white/10 transition-all duration-300">
+            <div className="flex items-center gap-3 mb-3">
+                <div className="p-2 rounded-lg bg-white/10 group-hover:scale-110 transition-transform">
+                    {icon}
                 </div>
-                <p className="text-slate-300 text-sm leading-relaxed">{desc}</p>
+                <h3 className="text-lg font-bold text-white">{title}</h3>
             </div>
-            );
+            <p className="text-slate-300 text-sm leading-relaxed">{desc}</p>
+        </div>
+    );
 }
 
-            function ChartBar({label, percent, color, value}) {
+function ChartBar({ label, percent, color, value }) {
     return (
+        <div>
+            <div className="flex justify-between text-sm mb-1 font-medium text-slate-300">
+                <span>{label}</span>
+                <span>{value}</span>
+            </div>
+            <div className="w-full h-2 bg-white/10 rounded-full overflow-hidden">
+                <div className={`h-full rounded-full ${color}`} style={{ width: `${percent}%` }}></div>
+            </div>
+        </div>
+    );
+}
+
+function SuggestionItem({ title, desc }) {
+    return (
+        <li className="flex gap-3 items-start">
+            <div className="mt-1 w-2 h-2 rounded-full bg-green-500 shrink-0"></div>
             <div>
-                <div className="flex justify-between text-sm mb-1 font-medium text-slate-300">
-                    <span>{label}</span>
-                    <span>{value}</span>
-                </div>
-                <div className="w-full h-2 bg-white/10 rounded-full overflow-hidden">
-                    <div className={`h-full rounded-full ${color}`} style={{ width: `${percent}%` }}></div>
-                </div>
+                <h4 className="font-bold text-slate-200 text-sm">{title}</h4>
+                <p className="text-sm text-slate-400">{desc}</p>
             </div>
-            );
-}
-
-            function SuggestionItem({title, desc}) {
-    return (
-            <li className="flex gap-3 items-start">
-                <div className="mt-1 w-2 h-2 rounded-full bg-green-500 shrink-0"></div>
-                <div>
-                    <h4 className="font-bold text-slate-200 text-sm">{title}</h4>
-                    <p className="text-sm text-slate-400">{desc}</p>
-                </div>
-            </li>
-            );
+        </li>
+    );
 }
