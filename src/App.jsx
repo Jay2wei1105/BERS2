@@ -38,6 +38,7 @@ import {
 } from './components/DashboardCharts';
 
 import { BERSeTable } from './components/BERSeTable';
+import { DEMO_DATA } from './data/demoData';
 
 // --- 主要應用程式元件 ---
 export default function App() {
@@ -45,6 +46,8 @@ export default function App() {
     const [dashboardRecord, setDashboardRecord] = useState(null);
     const [dashboardLoading, setDashboardLoading] = useState(false);
     const [dashboardError, setDashboardError] = useState(null);
+    const [isLoggedIn, setIsLoggedIn] = useState(false); // 新增登入狀態
+    const [isDemoMode, setIsDemoMode] = useState(false); // 新增 Demo 模式狀態
     const loading = false;
 
     const handleNavbarItemClick = useCallback(() => {
@@ -60,36 +63,55 @@ export default function App() {
     const handleAssessmentComplete = (assessment) => {
         setDashboardRecord(assessment);
         setDashboardError(null);
+        setIsLoggedIn(true); // 評估完成即視為登入
+        setIsDemoMode(false); // 退出 Demo 模式
         navigateTo('dashboard');
     };
 
-    const handleDashboardLookup = async (email, name) => {
-        if (!email || !name) {
-            setDashboardError('請輸入姓名與電子郵件');
-            return;
-        }
+    const handleVerifyDashboard = async (email, name) => {
         setDashboardLoading(true);
         setDashboardError(null);
-        const { data, error } = await supabase
-            .from('assessments')
-            .select('*')
-            .eq('email', email)
-            .eq('contact_name', name)
-            .order('created_at', { ascending: false })
-            .limit(1)
-            .maybeSingle();
+        try {
+            const { data, error } = await supabase
+                .from('assessments')
+                .select('*')
+                .eq('email', email)
+                .eq('contact_name', name)
+                .order('created_at', { ascending: false })
+                .limit(1);
 
-        if (error) {
-            console.error('Supabase lookup error:', error);
-            setDashboardError('查詢失敗，請稍後重試');
-            setDashboardRecord(null);
-        } else if (!data) {
-            setDashboardError('找不到相符的紀錄，請確認輸入是否正確');
-            setDashboardRecord(null);
-        } else {
-            setDashboardRecord(data);
+            if (error) throw error;
+            if (data && data.length > 0) {
+                setDashboardRecord(data[0]);
+                setIsLoggedIn(true); // 登入成功
+                setIsDemoMode(false); // 退出 Demo 模式
+            } else {
+                setDashboardError('找不到符合條件的評估記錄，請確認 Email 與姓名是否正確。');
+                setIsLoggedIn(false);
+            }
+        } catch (err) {
+            console.error('Dashboard verify error:', err);
+            setDashboardError('查詢時發生錯誤，請稍後再試。');
+            setIsLoggedIn(false);
+        } finally {
+            setDashboardLoading(false);
         }
-        setDashboardLoading(false);
+    };
+
+    const handleDemoMode = () => {
+        setDashboardRecord(DEMO_DATA);
+        setDashboardError(null);
+        setIsLoggedIn(true); // Demo 模式也視為登入
+        setIsDemoMode(true); // 進入 Demo 模式
+        navigateTo('dashboard');
+    };
+
+    const handleLogout = () => {
+        setDashboardRecord(null);
+        setDashboardError(null);
+        setIsLoggedIn(false);
+        setIsDemoMode(false);
+        navigateTo('home');
     };
 
     if (loading) {
@@ -101,25 +123,13 @@ export default function App() {
     }
 
     return (
-        <div className="relative min-h-screen font-sans selection:bg-green-500 selection:text-white overflow-x-hidden">
-
-            {/* --- 全域背景 (深色調 + 建築圖) --- */}
-            <div className="fixed inset-0 z-0 pointer-events-none">
-                <img
-                    src="https://images.unsplash.com/photo-1486325212027-8081e485255e?auto=format&fit=crop&q=80&w=2670"
-                    alt="Background"
-                    className="w-full h-full object-cover"
-                />
-                {/* 深色遮罩：確保所有頁面的文字都清晰可見 */}
-                <div className="absolute inset-0 bg-slate-900/85 backdrop-blur-[2px]" />
-                <div className="absolute inset-0 bg-gradient-to-t from-slate-950 via-slate-900/50 to-slate-900/80" />
-            </div>
-
-            {/* --- Navbar (全頁面統一風格) --- */}
+        <div className="flex flex-col min-h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950">
             <Navbar
                 currentPage={currentPage}
                 navigateTo={navigateTo}
                 onNavItemClick={handleNavbarItemClick}
+                isLoggedIn={isLoggedIn}
+                onLogout={handleLogout}
             />
 
             {/* --- 頁面內容渲染 --- */}
@@ -132,15 +142,24 @@ export default function App() {
                         {currentPage === 'form' && (
                             <AnalysisForm
                                 onComplete={handleAssessmentComplete}
+                                onRetry={() => {
+                                    setDashboardRecord(null);
+                                    setDashboardError(null);
+                                    setIsLoggedIn(false);
+                                    setIsDemoMode(false);
+                                }}
                             />
                         )}
                         {currentPage === 'dashboard' && (
                             <Dashboard
                                 data={dashboardRecord}
                                 onRetry={() => navigateTo('form')}
-                                onVerify={handleDashboardLookup}
+                                onVerify={handleVerifyDashboard}
+                                onDemo={handleDemoMode}
                                 loading={dashboardLoading}
                                 error={dashboardError}
+                                isLoggedIn={isLoggedIn}
+                                isDemoMode={isDemoMode}
                             />
                         )}
                         {/* 临时测试：验证新组件导入 */}
@@ -1294,8 +1313,9 @@ function InputField({ label, type = "text", ...props }) {
 }
 
 // --- 元件 4: 儀表板 (专业 BERS Dashboard) ---
-function Dashboard({ data, onRetry, onVerify, loading, error }) {
+function Dashboard({ data, onRetry, onVerify, onDemo, loading, error, isLoggedIn, isDemoMode }) {
     const [formState, setFormState] = useState({ email: '', name: '' });
+    const [showLoginForm, setShowLoginForm] = useState(false);
 
     const handleInputChange = (field, value) => {
         setFormState(prev => ({ ...prev, [field]: value }));
@@ -1306,9 +1326,13 @@ function Dashboard({ data, onRetry, onVerify, loading, error }) {
         onVerify?.(formState.email.trim(), formState.name.trim());
     };
 
+    // === 使用Demo数据或实际数据 ===
+    const displayData = data || DEMO_DATA; // Assuming DEMO_DATA is defined elsewhere
+    const isDemo = !data || isDemoMode;
+
     // === 数据计算 ===
-    const area = parseFloat(data?.total_area ?? data?.totalArea) || 1000;
-    const elec = parseFloat(data?.annual_electricity ?? data?.annualElectricity) || 150000;
+    const area = parseFloat(displayData?.total_area ?? displayData?.totalArea) || 1000;
+    const elec = parseFloat(displayData?.annual_electricity ?? displayData?.annualElectricity) || 150000;
     const euiValue = elec / area;
     const eui = euiValue.toFixed(1);
 
@@ -1330,202 +1354,215 @@ function Dashboard({ data, onRetry, onVerify, loading, error }) {
 
     // 格式化电费趋势数据
     const formatElectricityData = () => {
-        if (!data?.electricity_data) return [];
+        if (!displayData?.electricity_data) return [];
 
         const monthLabels = ['1月', '2月', '3月', '4月', '5月', '6月', '7月', '8月', '9月', '10月', '11月', '12月'];
 
         return monthLabels.map((month, index) => ({
             month,
-            year2023: data.electricity_data[index]?.[0] || 0,
-            year2024: data.electricity_data[index]?.[1] || 0
+            year2023: displayData.electricity_data[index]?.[0] || 0,
+            year2024: displayData.electricity_data[index]?.[1] || 0
         }));
     };
 
     return (
         <div className="animate-in fade-in zoom-in duration-500 space-y-8">
-            {/* 查询表单 */}
-            <form onSubmit={handleVerifySubmit} className="bg-white/5 backdrop-blur-md border border-white/10 rounded-3xl p-6 space-y-4">
-                <div>
-                    <h2 className="text-xl font-semibold text-white">查看我的分析報告</h2>
-                    <p className="text-sm text-slate-400">輸入當初填表的姓名與電子郵件，我們會找出最新一筆紀錄呈現。</p>
-                </div>
-                <div className="grid md:grid-cols-2 gap-4">
-                    <InputField
-                        label="聯絡人姓名"
-                        value={formState.name}
-                        onChange={(e) => handleInputChange('name', e.target.value)}
-                    />
-                    <InputField
-                        label="電子郵件"
-                        type="email"
-                        value={formState.email}
-                        onChange={(e) => handleInputChange('email', e.target.value)}
-                    />
-                </div>
-                {error && <p className="text-sm text-red-400">{error}</p>}
-                <div className="flex gap-3 flex-wrap">
-                    <button
-                        type="submit"
-                        disabled={loading}
-                        className="px-6 py-3 rounded-xl bg-blue-600 text-white font-semibold hover:bg-blue-500 transition disabled:opacity-50 disabled:cursor-not-allowed"
-                    >
-                        {loading ? '查詢中...' : '載入報告'}
-                    </button>
-                    <button
-                        type="button"
-                        onClick={() => {
-                            setFormState({ email: '', name: '' });
-                            onRetry();
-                        }}
-                        className="px-6 py-3 rounded-xl border border-white/20 text-white hover:bg-white/10"
-                    >
-                        重新填寫
-                    </button>
-                </div>
-            </form>
-
-            {!data && (
-                <div className="text-center py-12 bg-white/5 backdrop-blur-md rounded-3xl border border-white/10">
-                    <History size={48} className="mx-auto text-slate-500 mb-4" />
-                    <h2 className="text-2xl font-bold text-white mb-2">請輸入 Email 與姓名以取得報告</h2>
-                    <p className="text-slate-400">完成快速評估後，我們會把資料存入 Supabase。輸入當時填寫的聯絡資訊即可載入專屬報告。</p>
-                    <button onClick={onRetry} className="mt-6 px-6 py-3 bg-green-500 text-white rounded-xl font-bold hover:bg-green-400 transition-colors">
-                        進行新的評估
-                    </button>
+            {/* 顶部：Demo模式提示或登入按钮 */}
+            {isDemo && (
+                <div className="bg-gradient-to-r from-blue-600/20 to-purple-600/20 backdrop-blur-md border border-blue-500/30 rounded-3xl p-6">
+                    <div className="flex flex-col md:flex-row items-center justify-between gap-4">
+                        <div className="text-white">
+                            <h3 className="text-xl font-bold mb-1 flex items-center gap-2">
+                                <span className="text-2xl">📊</span>
+                                Demo 示例数据展示
+                            </h3>
+                            <p className="text-sm text-slate-300">
+                                这是示例数据，仅供预览Dashboard效果。登入后可查看您的真实评估报告。
+                            </p>
+                        </div>
+                        <button
+                            onClick={() => setShowLoginForm(true)}
+                            className="px-6 py-3 bg-blue-600 hover:bg-blue-500 text-white rounded-xl font-bold transition-colors flex items-center gap-2 whitespace-nowrap"
+                        >
+                            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 0 01-3-3V7a3 0 013-3h7a3 0 013 3v1" />
+                            </svg>
+                            登入查看我的报告
+                        </button>
+                    </div>
                 </div>
             )}
 
-            {data && (
-                <>
-                    {/* 报告标题 */}
-                    <div className="flex flex-col md:flex-row justify-between items-end mb-8 gap-4 text-white">
-                        <div>
-                            <h2 className="text-3xl font-bold mb-1">評估結果報告</h2>
-                            <div className="flex items-center gap-2 text-slate-400">
-                                <span className="bg-white/10 px-2 py-0.5 rounded text-xs border border-white/10">專案</span>
-                                <span>{data.building_name || data.basic_info?.companyName || '未命名建築'}</span>
-                            </div>
-                        </div>
-                        <div className="flex gap-2">
-                            <button onClick={() => window.print()} className="px-4 py-2 bg-white/5 border border-white/10 rounded-lg text-slate-300 font-medium hover:bg-white/10 hover:text-white transition-colors">匯出報表</button>
-                            <button onClick={onRetry} className="px-4 py-2 bg-green-600 text-white rounded-lg font-medium hover:bg-green-500 transition-colors">新增試算</button>
-                        </div>
-                    </div>
-
-                    {/* === 1. 关键指标卡片（4列）=== */}
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-                        <MetricCard
-                            title="建筑 EUI"
-                            value={eui}
-                            unit="kWh/m².yr"
-                            trend="down"
-                            trendValue="-5.2%"
-                            icon={Zap}
-                            color="blue"
-                        />
-                        <MetricCard
-                            title="排碳量"
-                            value={carbonEmission}
-                            unit="吨CO2/yr"
-                            trend="down"
-                            trendValue="-3.1%"
-                            icon={Leaf}
-                            color="green"
-                        />
-                        <MetricCard
-                            title="总和得分"
-                            value={totalScore}
-                            unit="分"
-                            trend="up"
-                            trendValue="+2.5%"
-                            icon={BarChart3}
-                            color="purple"
-                        />
-                        <div className="md:col-span-2 lg:col-span-1">
-                            <MetricCard
-                                title="建筑面积"
-                                value={area.toLocaleString()}
-                                unit="m²"
-                                icon={Building2}
-                                color="orange"
+            {/* 登入表单（弹出式） */}
+            {showLoginForm && (
+                <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm">
+                    <div className="bg-slate-900 border border-white/10 rounded-3xl p-8 max-w-md w-full mx-4 shadow-2xl">
+                        <h2 className="text-2xl font-bold text-white mb-4">登入查看报告</h2>
+                        <form onSubmit={handleVerifySubmit} className="space-y-4">
+                            <InputField
+                                label="聯絡人姓名"
+                                value={formState.name}
+                                onChange={(e) => handleInputChange('name', e.target.value)}
+                                required
                             />
-                        </div>
+                            <InputField
+                                label="電子郵件"
+                                type="email"
+                                value={formState.email}
+                                onChange={(e) => handleInputChange('email', e.target.value)}
+                                required
+                            />
+                            {error && <p className="text-sm text-red-400">{error}</p>}
+                            <div className="flex gap-3">
+                                <button
+                                    type="submit"
+                                    disabled={loading}
+                                    className="flex-1 px-6 py-3 rounded-xl bg-blue-600 text-white font-semibold hover:bg-blue-500 transition disabled:opacity-50"
+                                >
+                                    {loading ? '查詢中...' : '登入'}
+                                </button>
+                                <button
+                                    type="button"
+                                    onClick={() => setShowLoginForm(false)}
+                                    className="px-6 py-3 rounded-xl border border-white/20 text-white hover:bg-white/10"
+                                >
+                                    取消
+                                </button>
+                            </div>
+                        </form>
                     </div>
-
-                    {/* === 2. 油表 + 等级表格（2列）=== */}
-                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                        <GaugeChart
-                            value={parseFloat(eui)}
-                            max={300}
-                            currentLevel={rating}
-                            title="建筑能效等级"
-                        />
-                        <EfficiencyTable
-                            currentEUI={parseFloat(eui)}
-                            currentLevel={level}
-                            totalArea={area}
-                        />
-                    </div>
-
-                    {/* === 3. 比较区间 === */}
-                    <ComparisonRange
-                        buildingType={data.building_type || 'office'}
-                        yourValue={parseFloat(eui)}
-                        percentile={65}
-                    />
-
-                    {/* === 4. 趋势图 + 设备分析（2列）=== */}
-                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                        <ElectricityTrendChart
-                            data={formatElectricityData()}
-                            years={data.electricity_years || [2023, 2024]}
-                        />
-                        <EquipmentAnalysis
-                            equipment={[
-                                {
-                                    name: '中央空调系统 (Chiller)',
-                                    efficiency: 45,
-                                    rating: '一级能效',
-                                    status: '优',
-                                    savingPotential: '低 (已最佳化)',
-                                    color: 'green'
-                                },
-                                {
-                                    name: '办公照明系统',
-                                    efficiency: 18,
-                                    rating: '一级能效',
-                                    status: '优',
-                                    savingPotential: '低',
-                                    color: 'green'
-                                },
-                                {
-                                    name: '电梯直连梯',
-                                    efficiency: 8,
-                                    rating: '三级能效',
-                                    status: '高 (建议改善)',
-                                    savingPotential: '高',
-                                    color: 'orange'
-                                }
-                            ]}
-                        />
-                    </div>
-
-                    {/* === 5. 改善建议（保留原有）=== */}
-                    <div className="bg-green-900/20 backdrop-blur-md p-8 rounded-3xl border border-green-500/20 text-white">
-                        <h3 className="font-bold text-lg text-green-400 mb-4 flex items-center gap-2">
-                            <Info size={20} /> 改善建議
-                        </h3>
-                        <ul className="space-y-4">
-                            <SuggestionItem title="空調主機效能" desc="建議汰換為一級能效變頻磁浮離心機。" />
-                            <SuggestionItem title="照明功率密度" desc="目前 12W/m² 略高，建議更換 LED 平板燈具。" />
-                            <SuggestionItem title="契約容量優化" desc="依據用電曲線，建議調降契約容量以節省基本費。" />
-                        </ul>
-                    </div>
-
-                    {/* === 6. BERSe 评估总表 === */}
-                    <BERSeTable data={data} />
-                </>
+                </div>
             )}
+
+            {/* 报告标题（不显示用户和建筑信息如果是Demo） */}
+            <div className="flex flex-col md:flex-row justify-between items-end mb-8 gap-4 text-white">
+                <div>
+                    <h2 className="text-3xl font-bold mb-1">評估結果報告</h2>
+                    {!isDemo && (
+                        <div className="flex items-center gap-2 text-slate-400">
+                            <span className="bg-white/10 px-2 py-0.5 rounded text-xs border border-white/10">專案</span>
+                            <span>{displayData.building_name || displayData.basic_info?.companyName || '未命名建築'}</span>
+                        </div>
+                    )}
+                </div>
+                <div className="flex gap-2">
+                    <button onClick={() => window.print()} className="px-4 py-2 bg-white/5 border border-white/10 rounded-lg text-slate-300 font-medium hover:bg-white/10 hover:text-white transition-colors">匯出報表</button>
+                    <button onClick={onRetry} className="px-4 py-2 bg-green-600 text-white rounded-lg font-medium hover:bg-green-500 transition-colors">新增試算</button>
+                </div>
+            </div>
+
+            {/* === 1. 关键指标卡片（4列）=== */}
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                <MetricCard
+                    title="建筑 EUI"
+                    value={eui}
+                    unit="kWh/m².yr"
+                    trend="down"
+                    trendValue="-5.2%"
+                    icon={Zap}
+                    color="blue"
+                />
+                <MetricCard
+                    title="排碳量"
+                    value={carbonEmission}
+                    unit="吨CO2/yr"
+                    trend="down"
+                    trendValue="-3.1%"
+                    icon={Leaf}
+                    color="green"
+                />
+                <MetricCard
+                    title="总和得分"
+                    value={totalScore}
+                    unit="分"
+                    trend="up"
+                    trendValue="+2.5%"
+                    icon={BarChart3}
+                    color="purple"
+                />
+                <div className="md:col-span-2 lg:col-span-1">
+                    <MetricCard
+                        title="建筑面积"
+                        value={area.toLocaleString()}
+                        unit="m²"
+                        icon={Building2}
+                        color="orange"
+                    />
+                </div>
+            </div>
+
+            {/* === 2. 油表 + 等级表格（2列）=== */}
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                <GaugeChart
+                    value={parseFloat(eui)}
+                    max={300}
+                    currentLevel={rating}
+                    title="建筑能效等级"
+                />
+                <EfficiencyTable
+                    currentEUI={parseFloat(eui)}
+                    currentLevel={level}
+                    totalArea={area}
+                />
+            </div>
+
+            {/* === 3. 比较区间 === */}
+            <ComparisonRange
+                buildingType={data.building_type || 'office'}
+                yourValue={parseFloat(eui)}
+                percentile={65}
+            />
+
+            {/* === 4. 趋势图 + 设备分析（2列）=== */}
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                <ElectricityTrendChart
+                    data={formatElectricityData()}
+                    years={data.electricity_years || [2023, 2024]}
+                />
+                <EquipmentAnalysis
+                    equipment={[
+                        {
+                            name: '中央空调系统 (Chiller)',
+                            efficiency: 45,
+                            rating: '一级能效',
+                            status: '优',
+                            savingPotential: '低 (已最佳化)',
+                            color: 'green'
+                        },
+                        {
+                            name: '办公照明系统',
+                            efficiency: 18,
+                            rating: '一级能效',
+                            status: '优',
+                            savingPotential: '低',
+                            color: 'green'
+                        },
+                        {
+                            name: '电梯直连梯',
+                            efficiency: 8,
+                            rating: '三级能效',
+                            status: '高 (建议改善)',
+                            savingPotential: '高',
+                            color: 'orange'
+                        }
+                    ]}
+                />
+            </div>
+
+            {/* === 5. 改善建议（保留原有）=== */}
+            <div className="bg-green-900/20 backdrop-blur-md p-8 rounded-3xl border border-green-500/20 text-white">
+                <h3 className="font-bold text-lg text-green-400 mb-4 flex items-center gap-2">
+                    <Info size={20} /> 改善建議
+                </h3>
+                <ul className="space-y-4">
+                    <SuggestionItem title="空調主機效能" desc="建議汰換為一級能效變頻磁浮離心機。" />
+                    <SuggestionItem title="照明功率密度" desc="目前 12W/m² 略高，建議更換 LED 平板燈具。" />
+                    <SuggestionItem title="契約容量優化" desc="依據用電曲線，建議調降契約容量以節省基本費。" />
+                </ul>
+            </div>
+
+            {/* === 6. BERSe 评估总表 === */}
+            <BERSeTable data={displayData} />
         </div>
     );
 }
