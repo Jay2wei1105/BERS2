@@ -287,14 +287,22 @@ export function BERSeTable({ data }) {
                                                 </tr>
                                             </thead>
                                             <tbody className="text-slate-200">
-                                                {(section.rows.length > 0 ? section.rows : Array(5).fill({})).map((row, idx) => (
-                                                    <tr key={idx}>
-                                                        <td className="border border-white/20 p-3 h-10">{row.name || ''}</td>
-                                                        <td className="border border-white/20 p-3 h-10 text-right">{row.area || ''}</td>
-                                                        <td className="border border-white/20 p-3 h-10">{row.formula || ''}</td>
-                                                        <td className="border border-white/20 p-3 h-10 text-right">{row.elec || ''}</td>
+                                                {section.rows.length > 0 ? (
+                                                    section.rows.map((row, idx) => (
+                                                        <tr key={idx}>
+                                                            <td className="border border-white/20 p-3 h-10">{row.name || ''}</td>
+                                                            <td className="border border-white/20 p-3 h-10 text-right">{row.area || ''}</td>
+                                                            <td className="border border-white/20 p-3 h-10">{row.formula || ''}</td>
+                                                            <td className="border border-white/20 p-3 h-10 text-right">{row.elec || ''}</td>
+                                                        </tr>
+                                                    ))
+                                                ) : (
+                                                    <tr>
+                                                        <td className="border border-white/20 p-4 text-center text-slate-500" colSpan="4">
+                                                            尚無免評估分區資料
+                                                        </td>
                                                     </tr>
-                                                ))}
+                                                )}
                                                 <tr>
                                                     <td className="border border-white/20 p-3 bg-white/5 font-bold">免評估分區總面積<br />AFn</td>
                                                     <td className="border border-white/20 p-3 text-right text-blue-300 font-medium font-mono text-base">{section.footer.totalArea}</td>
@@ -323,18 +331,26 @@ export function BERSeTable({ data }) {
                                                 </tr>
                                             </thead>
                                             <tbody className="text-slate-200">
-                                                {(section.rows.length > 0 ? section.rows : Array(8).fill({})).map((row, idx) => (
-                                                    <tr key={idx}>
-                                                        <td className="border border-white/20 p-2 h-10">{row.name || ''}</td>
-                                                        <td className="border border-white/20 p-2 h-10 text-right">{row.area || ''}</td>
-                                                        <td className="border border-white/20 p-2 h-10 text-right">{row.aeui || ''}</td>
-                                                        <td className="border border-white/20 p-2 h-10 text-right">{row.leui || ''}</td>
-                                                        <td className="border border-white/20 p-2 h-10 text-right">{row.eeui || ''}</td>
-                                                        <td className="border border-white/20 p-2 h-10 text-center">{row.ur || ''}</td>
-                                                        <td className="border border-white/20 p-2 h-10 text-center">{row.sor || ''}</td>
-                                                        <td className="border border-white/20 p-2 h-10 text-right">{row.elec || ''}</td>
+                                                {section.rows.length > 0 ? (
+                                                    section.rows.map((row, idx) => (
+                                                        <tr key={idx}>
+                                                            <td className="border border-white/20 p-2 h-10">{row.name || ''}</td>
+                                                            <td className="border border-white/20 p-2 h-10 text-right">{row.area || ''}</td>
+                                                            <td className="border border-white/20 p-2 h-10 text-right">{row.aeui || ''}</td>
+                                                            <td className="border border-white/20 p-2 h-10 text-right">{row.leui || ''}</td>
+                                                            <td className="border border-white/20 p-2 h-10 text-right">{row.eeui || ''}</td>
+                                                            <td className="border border-white/20 p-2 h-10 text-center">{row.ur || ''}</td>
+                                                            <td className="border border-white/20 p-2 h-10 text-center">{row.sor || ''}</td>
+                                                            <td className="border border-white/20 p-2 h-10 text-right">{row.elec || ''}</td>
+                                                        </tr>
+                                                    ))
+                                                ) : (
+                                                    <tr>
+                                                        <td className="border border-white/20 p-4 text-center text-slate-500" colSpan="8">
+                                                            尚無耗能分區資料
+                                                        </td>
                                                     </tr>
-                                                ))}
+                                                )}
                                                 <tr>
                                                     <td className="border border-white/20 p-2 bg-white/5 font-bold">評估分區總面積</td>
                                                     <td className="border border-white/20 p-2 text-right text-blue-300 font-bold">{section.footer.assessedArea}</td>
@@ -344,39 +360,39 @@ export function BERSeTable({ data }) {
                                                 </tr>
                                                 <tr>
                                                     <td className="border border-white/20 p-2 bg-white/5 font-bold" colSpan="7">
-                                                        耗能分區總年耗電量 UR × Σ [(AEUIm + LEUIm + EEUIm) × SORi × Afi]
+                                                        耗能分區總年耗電量
                                                     </td>
                                                     <td className="border border-white/20 p-2 text-right text-blue-300 font-bold">{section.footer.totalZoneElec}</td>
                                                 </tr>
                                                 <tr>
-                                                    <td className="border border-white/20 p-2 bg-white/5 font-bold">實際年總耗電量 TE</td>
+                                                    <td className="border border-white/20 p-2 bg-white/5 font-bold">實際年總耗電量</td>
                                                     <td className="border border-white/20 p-2 text-right" colSpan="2">{section.footer.te}</td>
                                                     <td className="border border-white/20 p-2 text-center text-slate-400">kWh/yr</td>
-                                                    <td className="border border-white/20 p-2 bg-white/5 font-bold">輸送設備年耗電量 Et</td>
+                                                    <td className="border border-white/20 p-2 bg-white/5 font-bold">輸送設備年耗電量</td>
                                                     <td className="border border-white/20 p-2 text-right" colSpan="2">{section.footer.et}</td>
                                                     <td className="border border-white/20 p-2 text-center text-slate-400">kWh/yr</td>
                                                 </tr>
                                                 <tr>
-                                                    <td className="border border-white/20 p-2 bg-white/5 font-bold">揚水設備年耗電量 Ep</td>
+                                                    <td className="border border-white/20 p-2 bg-white/5 font-bold">揚水設備年耗電量</td>
                                                     <td className="border border-white/20 p-2 text-right" colSpan="2">{section.footer.ep}</td>
                                                     <td className="border border-white/20 p-2 text-center text-slate-400">kWh/yr</td>
-                                                    <td className="border border-white/20 p-2 bg-white/5 font-bold">加熱設備年耗電量 Eh</td>
+                                                    <td className="border border-white/20 p-2 bg-white/5 font-bold">加熱設備年耗電量</td>
                                                     <td className="border border-white/20 p-2 text-right" colSpan="2">{section.footer.eh}</td>
                                                     <td className="border border-white/20 p-2 text-center text-slate-400">kWh/yr</td>
                                                 </tr>
                                                 <tr>
-                                                    <td className="border border-white/20 p-2 bg-white/5 font-bold">其他特殊用電量 Ee</td>
+                                                    <td className="border border-white/20 p-2 bg-white/5 font-bold">其他特殊用電量</td>
                                                     <td className="border border-white/20 p-2 text-right" colSpan="2">{section.footer.ee}</td>
                                                     <td className="border border-white/20 p-2 text-center text-slate-400">kWh/yr</td>
                                                     <td className="border border-white/20 p-2" colSpan="3"></td>
                                                 </tr>
                                                 <tr>
-                                                    <td className="border border-white/20 p-2 bg-white/5 font-bold" colSpan="5">總耗電密度 TEUI = TE / (AFe + AFn)</td>
+                                                    <td className="border border-white/20 p-2 bg-white/5 font-bold" colSpan="5">總耗電密度</td>
                                                     <td className="border border-white/20 p-2 text-right text-red-400 font-bold" colSpan="2">{section.footer.teui}</td>
                                                     <td className="border border-white/20 p-2 text-center text-slate-400">kWh/(m².yr)</td>
                                                 </tr>
                                                 <tr>
-                                                    <td className="border border-white/20 p-2 bg-white/5 font-bold" colSpan="5">主設備用電密度 EUI' = [TE - UR×(EN+Et+Ep+Eh) - Ee] / Afe</td>
+                                                    <td className="border border-white/20 p-2 bg-white/5 font-bold" colSpan="5">主設備用電密度</td>
                                                     <td className="border border-white/20 p-2 text-right text-red-400 font-bold" colSpan="2">{section.footer.majorEui}</td>
                                                     <td className="border border-white/20 p-2 text-center text-slate-400">kWh/(m².yr)</td>
                                                 </tr>
