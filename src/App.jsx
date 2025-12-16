@@ -37,6 +37,8 @@ import {
     EquipmentAnalysis
 } from './components/DashboardCharts';
 
+import { BERSeTable } from './components/BERSeTable';
+
 // --- 主要應用程式元件 ---
 export default function App() {
     const [currentPage, setCurrentPage] = useState('home');
@@ -1519,6 +1521,9 @@ function Dashboard({ data, onRetry, onVerify, loading, error }) {
                             <SuggestionItem title="契約容量優化" desc="依據用電曲線，建議調降契約容量以節省基本費。" />
                         </ul>
                     </div>
+
+                    {/* === 6. BERSe 评估总表 === */}
+                    <BERSeTable data={data} />
                 </>
             )}
         </div>
