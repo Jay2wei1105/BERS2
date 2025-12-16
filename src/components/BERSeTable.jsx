@@ -27,6 +27,14 @@ export function BERSeTable({ data }) {
         }));
     };
 
+    // 格式化數值：0 顯示為 "-"
+    const formatValue = (value) => {
+        if (value === null || value === undefined || value === '' || value === 0 || value === '0') {
+            return '-';
+        }
+        return value;
+    };
+
     // 構建評估表數據
     const buildTableData = () => {
         if (!data) {
@@ -42,14 +50,14 @@ export function BERSeTable({ data }) {
                 rows: [
                     { label: '建築物名稱', value: data?.building_name || '未命名' },
                     { label: '建築物地址', value: data?.basic_info?.address || '-' },
-                    { label: '總樓地板面積', value: data?.total_area?.toLocaleString() || 0 },
-                    { label: '評估樓地板面積', value: data?.total_area?.toLocaleString() || 0 },
-                    { label: '地上總樓層數', value: data?.basic_info?.floorsAbove || '-' },
-                    { label: '地下總樓層數', value: data?.basic_info?.floorsBelow || '-' },
-                    { label: '實際年總耗電量 (EUI)', value: data?.calculated_eui || 0 },
-                    { label: '雨中水年利用量', value: data?.water_data?.rainwater || 0 },
-                    { label: '其他特殊用電', value: data?.special_electricity || 0 },
-                    { label: '城鄉係數', value: data?.ur_coefficient || 1.0 },
+                    { label: '總樓地板面積', value: formatValue(data?.total_area?.toLocaleString()) },
+                    { label: '評估樓地板面積', value: formatValue(data?.total_area?.toLocaleString()) },
+                    { label: '地上總樓層數', value: formatValue(data?.basic_info?.floorsAbove) },
+                    { label: '地下總樓層數', value: formatValue(data?.basic_info?.floorsBelow) },
+                    { label: '實際年總耗電量 (EUI)', value: formatValue(data?.calculated_eui) },
+                    { label: '雨中水年利用量', value: formatValue(data?.water_data?.rainwater) },
+                    { label: '其他特殊用電', value: formatValue(data?.special_electricity) },
+                    { label: '城鄉係數', value: data?.ur_coefficient || '1.0' },
                     { label: '建築分類', value: getBuildingTypeName(data?.building_type) },
                     { label: '空調系統類型', value: data?.ac_system || '中央空調' },
                     { label: '評估日期', value: formatDate(data?.created_at) }
