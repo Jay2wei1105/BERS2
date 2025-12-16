@@ -1,20 +1,35 @@
 import React, { useState, useMemo, useEffect, useCallback } from 'react';
 import {
     Zap,
-    Building2,
-    BarChart3,
-    Home,
-    ArrowRight,
+    LayoutDashboard,
+    FileText,
+    CheckCircle,
+    AlertCircle,
     Leaf,
-    Info,
-import { Zap, LayoutDashboard, FileText, CheckCircle, AlertCircle, Leaf, BarChart3, TrendingUp, TrendingDown, Minus, Download, ChevronUp, ChevronDown, User, Lock, ArrowRight, Building2, Calendar, ClipboardCheck, Scale, Calculator } from 'lucide-react';
+    BarChart3,
+    TrendingUp,
+    TrendingDown,
+    Minus,
+    Download,
+    ChevronUp,
+    ChevronDown,
+    User,
+    Lock,
+    ArrowRight,
+    Building2,
+    Calendar,
+    ClipboardCheck,
+    Scale,
+    Calculator,
+    Loader2
+} from 'lucide-react';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip as RechartsTooltip, ResponsiveContainer, BarChart, Bar, Legend } from 'recharts';
 import { supabase } from './lib/supabaseClient';
 import { MetricCard, GaugeChart, EfficiencyTable, ComparisonRange, ElectricityTrendChart, EquipmentAnalysis } from './components/DashboardComponents';
-import { BERSeTable } from './components/BERSeTable'; // Import BERSeTable
+import { BERSeTable } from './components/BERSeTable';
 import { DEMO_DATA } from './data/demoData';
-import { zoneParameters } from './data/zoneParameters'; // Import zone parameters
-import { calculateBERS, lookupZoneParameter } from './utils/bersCalculator'; // Import calculator
+import { zoneParameters } from './data/zoneParameters';
+import { calculateBERS, lookupZoneParameter } from './utils/bersCalculator';
 
 // --- 主要應用程式元件 ---
 export default function App() {
@@ -60,15 +75,36 @@ export default function App() {
             if (data && data.length > 0) {
                 // 轉換為 Dashboard 預期格式
                 const record = data[0];
+
+                console.log('📊 從 Supabase 讀取的原始資料:', record);
+
                 const dashboardData = {
                     ...record,
+                    // 基本欄位映射
+                    building_name: record.company_name || record.building_name,
                     total_area: record.floor_area,
                     totalArea: record.floor_area,
                     annual_electricity: record.analysis_result?.annual_electricity,
                     annualElectricity: record.analysis_result?.annual_electricity,
-                    building_name: record.company_name,
-                    ...record.analysis_result // 展開分析結果到上層，供 BERSeTable 使用
+                    calculated_eui: record.analysis_result?.calculated_eui || record.analysis_result?.eui,
+
+                    // 展開 analysis_result 的所有內容
+                    ...record.analysis_result,
+
+                    // 確保這些欄位不被覆蓋
+                    spaces: record.spaces,
+                    equipment: record.equipment,
+                    electricity_data: record.electricity_data,
+                    water_data: record.water_data,
+                    basic_info: record.basic_info || {
+                        address: record.address,
+                        floorsAbove: record.floors_above,
+                        floorsBelow: record.floors_below,
+                        buildingType: record.building_type
+                    }
                 };
+
+                console.log('✅ 轉換後的 Dashboard 資料:', dashboardData);
 
                 // --- 補回舊資料缺失的計算欄位 (若 analysis_result 中沒有詳細分區資訊) ---
                 if (!dashboardData.consumption_zones || dashboardData.consumption_zones.length === 0) {
