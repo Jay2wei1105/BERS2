@@ -1344,10 +1344,10 @@ function Dashboard({ data, onRetry, onVerify, onDemo, loading, error, isLoggedIn
     let rating = '待改善';
     let color = 'text-red-400';
 
-    if (euiValue < 100) { level = 5; rating = '1+ 级 (钻石级)'; color = 'text-emerald-400'; }
-    else if (euiValue < 140) { level = 4; rating = '1 级 (黄金级)'; color = 'text-green-400'; }
-    else if (euiValue < 180) { level = 3; rating = '2 级 (银级)'; color = 'text-yellow-400'; }
-    else if (euiValue < 220) { level = 2; rating = '3 级 (合格)'; color = 'text-orange-400'; }
+    if (euiValue < 100) { level = 5; rating = '1+ 級 (鑽石級)'; color = 'text-emerald-400'; }
+    else if (euiValue < 140) { level = 4; rating = '1 級 (黃金級)'; color = 'text-green-400'; }
+    else if (euiValue < 180) { level = 3; rating = '2 級 (銀級)'; color = 'text-yellow-400'; }
+    else if (euiValue < 220) { level = 2; rating = '3 級 (合格)'; color = 'text-orange-400'; }
 
     // 计算总分（简化版：100 - EUI相对值）
     const totalScore = Math.max(10, Math.min(100, 100 - (euiValue - 80) / 2)).toFixed(0);
@@ -1367,17 +1367,17 @@ function Dashboard({ data, onRetry, onVerify, onDemo, loading, error, isLoggedIn
 
     return (
         <div className="animate-in fade-in zoom-in duration-500 space-y-8">
-            {/* 顶部：Demo模式提示或登入按钮 */}
+            {/* 頂部：Demo模式提示或登入按鈕 */}
             {isDemo && (
                 <div className="bg-gradient-to-r from-blue-600/20 to-purple-600/20 backdrop-blur-md border border-blue-500/30 rounded-3xl p-6">
                     <div className="flex flex-col md:flex-row items-center justify-between gap-4">
                         <div className="text-white">
                             <h3 className="text-xl font-bold mb-1 flex items-center gap-2">
                                 <span className="text-2xl">📊</span>
-                                Demo 示例数据展示
+                                Demo 範例數據展示
                             </h3>
                             <p className="text-sm text-slate-300">
-                                这是示例数据，仅供预览Dashboard效果。登入后可查看您的真实评估报告。
+                                這是範例數據，僅供預覽 Dashboard 效果。登入後可查看您的真實評估報告。
                             </p>
                         </div>
                         <button
@@ -1387,17 +1387,17 @@ function Dashboard({ data, onRetry, onVerify, onDemo, loading, error, isLoggedIn
                             <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 0 1-3 3H6a3 3 0 0 1-3-3V7a3 3 0 0 1 3-3h7a3 3 0 0 1 3 3v1" />
                             </svg>
-                            登入查看我的报告
+                            登入查看我的報告
                         </button>
                     </div>
                 </div>
             )}
 
-            {/* 登入表单（弹出式） */}
+            {/* 登入表單（彈出式） */}
             {showLoginForm && (
                 <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm">
                     <div className="bg-slate-900 border border-white/10 rounded-3xl p-8 max-w-md w-full mx-4 shadow-2xl">
-                        <h2 className="text-2xl font-bold text-white mb-4">登入查看报告</h2>
+                        <h2 className="text-2xl font-bold text-white mb-4">登入查看報告</h2>
                         <form onSubmit={handleVerifySubmit} className="space-y-4">
                             <InputField
                                 label="聯絡人姓名"
@@ -1511,7 +1511,7 @@ function Dashboard({ data, onRetry, onVerify, onDemo, loading, error, isLoggedIn
                 interactive={true}
             />
 
-            {/* === 5. 设备分析（全宽）=== */}
+            {/* === 5. 設備分析（全寬）=== */}
             <EquipmentAnalysis
                 equipment={[
                     {
@@ -1541,7 +1541,7 @@ function Dashboard({ data, onRetry, onVerify, onDemo, loading, error, isLoggedIn
                 ]}
             />
 
-            {/* === 6. BERSe 评估总表 === */}
+            {/* === 6. BERSe 評估總表 === */}
             <BERSeTable data={displayData} />
         </div>
     );

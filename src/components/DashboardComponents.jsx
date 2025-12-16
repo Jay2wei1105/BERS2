@@ -97,56 +97,111 @@ export function GaugeChart({ value, max = 300, currentLevel, title = "建築能�
         { level: '4', min: 220, max: 300, color: '#ef4444', label: '待改善' }
     ];
 
-    // Compact模式 - 只显示指针和数字
+    // Compact模式 - 炫酷視覺 + 獎章風格
     if (compact) {
+        // 定義漸變色
+        const gradients = [
+            { id: 'grad-diamond', stops: ['#22d3ee', '#0ea5e9'] }, // 青 -> 藍
+            { id: 'grad-gold', stops: ['#fde047', '#eab308'] },    // 黃 -> 金
+            { id: 'grad-silver', stops: ['#e2e8f0', '#94a3b8'] },  // 灰白 -> 銀灰
+            { id: 'grad-bronze', stops: ['#fdba74', '#f97316'] },  // 淺橘 -> 深橘
+            { id: 'grad-bad', stops: ['#fca5a5', '#ef4444'] }      // 淺紅 -> 深紅
+        ];
+
+        // 根據當前數值決定顏色主題
+        let themeColor = '#ef4444';
+        let themeGradientId = 'grad-bad';
+        let badgeColorClass = 'bg-red-500/20 text-red-400 border-red-500/50';
+        let glowColor = 'rgba(239, 68, 68, 0.5)';
+
+        if (value <= 100) {
+            themeColor = '#0ea5e9'; themeGradientId = 'grad-diamond';
+            badgeColorClass = 'bg-cyan-500/20 text-cyan-400 border-cyan-400/50 from-cyan-900/40 to-blue-900/40';
+            glowColor = 'rgba(14, 165, 233, 0.8)'; // 鑽石藍光
+        } else if (value <= 140) {
+            themeColor = '#eab308'; themeGradientId = 'grad-gold';
+            badgeColorClass = 'bg-yellow-500/20 text-yellow-400 border-yellow-400/50 from-yellow-900/40 to-amber-900/40';
+            glowColor = 'rgba(234, 179, 8, 0.6)';
+        } else if (value <= 180) {
+            themeColor = '#94a3b8'; themeGradientId = 'grad-silver';
+            badgeColorClass = 'bg-slate-400/20 text-slate-300 border-slate-400/50 from-slate-800/40 to-gray-800/40';
+            glowColor = 'rgba(148, 163, 184, 0.6)';
+        } else if (value <= 220) {
+            themeColor = '#f97316'; themeGradientId = 'grad-bronze';
+            badgeColorClass = 'bg-orange-500/20 text-orange-400 border-orange-400/50 from-orange-900/40 to-red-900/40';
+            glowColor = 'rgba(249, 115, 22, 0.6)';
+        }
+
         return (
-            <div className="bg-white/5 backdrop-blur-md border border-white/10 rounded-3xl p-6 hover-lift h-full flex flex-col justify-center">
-                {/* 简化的SVG指针 */}
-                <svg viewBox="0 0 200 110" className="w-full h-20 mb-2">
-                    {/* 5个等级的弧线 */}
-                    {segments.map((seg, i) => {
-                        const startAngle = -90 + ((seg.min / max) * 180);
-                        const endAngle = -90 + ((seg.max / max) * 180);
-                        const largeArc = (endAngle - startAngle) > 180 ? 1 : 0;
+            <div className="bg-gradient-to-br from-white/10 to-white/5 backdrop-blur-xl border border-white/10 rounded-3xl p-6 hover-lift h-full flex flex-col justify-center relative overflow-hidden group">
+                {/* 背景光暈效果 */}
+                <div
+                    className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-32 h-32 rounded-full blur-[60px] opacity-20 pointer-events-none transition-all duration-1000"
+                    style={{ background: themeColor }}
+                ></div>
 
-                        const startX = 100 + 70 * Math.cos((startAngle * Math.PI) / 180);
-                        const startY = 100 + 70 * Math.sin((startAngle * Math.PI) / 180);
-                        const endX = 100 + 70 * Math.cos((endAngle * Math.PI) / 180);
-                        const endY = 100 + 70 * Math.sin((endAngle * Math.PI) / 180);
+                {/* SVG指針 (帶濾鏡) */}
+                <svg viewBox="0 0 200 120" className="w-full h-24 mb-2 relative z-10 drop-shadow-lg">
+                    <defs>
+                        {/* 定義漸變 */}
+                        {gradients.map(g => (
+                            <linearGradient key={g.id} id={g.id} x1="0%" y1="0%" x2="100%" y2="0%">
+                                <stop offset="0%" stopColor={g.stops[0]} />
+                                <stop offset="100%" stopColor={g.stops[1]} />
+                            </linearGradient>
+                        ))}
+                        {/* 發光濾鏡 */}
+                        <filter id="glow" x="-50%" y="-50%" width="200%" height="200%">
+                            <feGaussianBlur stdDeviation="4" result="coloredBlur" />
+                            <feMerge>
+                                <feMergeNode in="coloredBlur" />
+                                <feMergeNode in="SourceGraphic" />
+                            </feMerge>
+                        </filter>
+                    </defs>
 
-                        return (
-                            <path
-                                key={i}
-                                d={`M ${startX} ${startY} A 70 70 0 ${largeArc} 1 ${endX} ${endY}`}
-                                fill="none"
-                                stroke={seg.color}
-                                strokeWidth="6"
-                                opacity="0.4"
-                            />
-                        );
-                    })}
+                    {/* 背景軌道 */}
+                    <path d="M 30 100 A 70 70 0 0 1 170 100" fill="none" stroke="rgba(255,255,255,0.1)" strokeWidth="12" strokeLinecap="round" />
 
-                    {/* 指针 - 从圆心向外 */}
-                    <line
-                        x1="100"
-                        y1="100"
-                        x2={100 + 55 * Math.cos((angle * Math.PI) / 180)}
-                        y2={100 + 55 * Math.sin((angle * Math.PI) / 180)}
-                        stroke="white"
-                        strokeWidth="2.5"
+                    {/* 有色進度條 (帶漸變和發光) */}
+                    {/* 使用 strokeDasharray 實現進度動畫 */}
+                    <path
+                        d="M 30 100 A 70 70 0 0 1 170 100"
+                        fill="none"
+                        stroke={`url(#${themeGradientId})`}
+                        strokeWidth="12"
                         strokeLinecap="round"
-                        style={{
-                            transition: 'all 1s ease-out'
-                        }}
+                        strokeDasharray="220"
+                        strokeDashoffset={220 - (percentage * 220)} // 220是近似弧長
+                        className="transition-all duration-1000 ease-out"
+                        filter="url(#glow)"
+                        opacity="0.9"
                     />
-                    <circle cx="100" cy="100" r="4" fill="white" />
+
+                    {/* 指針 (更銳利的設計) */}
+                    <g className="transition-all duration-1000 ease-out" style={{ transformOrigin: '100px 100px', transform: `rotate(${angle}deg)` }}>
+                        {/* 指針陰影 */}
+                        <line x1="100" y1="100" x2="100" y2="35" stroke="rgba(0,0,0,0.5)" strokeWidth="4" strokeLinecap="round" transform="translate(2, 2)" />
+                        {/* 指針本體 */}
+                        <line x1="100" y1="100" x2="100" y2="35" stroke="white" strokeWidth="4" strokeLinecap="round" />
+                        {/* 中心點 */}
+                        <circle cx="100" cy="100" r="6" fill="#fff" stroke={themeColor} strokeWidth="3" />
+                    </g>
                 </svg>
 
-                {/* 数值显示 */}
-                <div className="text-center">
-                    <div className="text-3xl font-bold text-white mb-1">{value.toFixed(1)}</div>
-                    <div className="text-xs text-slate-400 mb-2">kWh/m².yr</div>
-                    <div className="text-sm font-semibold text-yellow-400">{currentLevel}</div>
+                {/* 數值顯示 */}
+                <div className="text-center relative z-10">
+                    <div className="text-4xl font-bold text-white mb-1 drop-shadow-md tracking-tight" style={{ textShadow: `0 0 20px ${glowColor}` }}>
+                        {value.toFixed(1)}
+                    </div>
+                    <div className="text-xs text-slate-400 font-medium tracking-wide uppercase mb-3">kWh/m².yr</div>
+
+                    {/* 獎章風格的等級顯示 */}
+                    <div className={`inline-flex items-center gap-2 px-4 py-1.5 rounded-full border bg-gradient-to-r shadow-lg transition-all duration-500 ${badgeColorClass}`}>
+                        {/* 獎章圖示 */}
+                        <span className="text-lg">🏅</span>
+                        <span className="text-sm font-bold tracking-wider">{currentLevel}</span>
+                    </div>
                 </div>
             </div>
         );
@@ -328,8 +383,8 @@ export function EfficiencyTable({ currentEUI, currentLevel, totalArea, fullWidth
                                 <tr
                                     key={index}
                                     className={`border-b border-white/5 transition-all ${isCurrentLevel
-                                            ? `${item.bgColor} ${item.borderColor} border-l-4`
-                                            : 'hover:bg-white/5'
+                                        ? `${item.bgColor} ${item.borderColor} border-l-4`
+                                        : 'hover:bg-white/5'
                                         }`}
                                 >
                                     <td className="py-4 px-4">
