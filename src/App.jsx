@@ -23,7 +23,6 @@ import {
     Calculator,
     Loader2
 } from 'lucide-react';
-import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip as RechartsTooltip, ResponsiveContainer, BarChart, Bar, Legend } from 'recharts';
 import { supabase } from './lib/supabaseClient';
 import { MetricCard, GaugeChart, EfficiencyTable, ComparisonRange, ElectricityTrendChart, EquipmentAnalysis } from './components/DashboardComponents';
 import { BERSeTable } from './components/BERSeTable';
