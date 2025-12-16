@@ -74,8 +74,37 @@ export function BERSeTable({ data }) {
                 ]
             },
             {
+                id: 'exemptionZone',
+                title: '三、BERSe免評估分區資料',
+                icon: <FileText size={20} />,
+                header: '(分區欄位不足時請自行增列)',
+                rows: data?.exemption_zones || [], // 預期是一個陣列
+                footer: {
+                    totalArea: data?.exemption_total_area || '-',
+                    totalElec: data?.exemption_total_elec || '-'
+                }
+            },
+            {
+                id: 'consumptionZone',
+                title: '四、BERSe耗能分區資料',
+                icon: <FileText size={20} />,
+                header: '(分區欄位不足時請自行增列)',
+                rows: data?.consumption_zones || [], // 預期是一個陣列
+                footer: {
+                    assessedArea: data?.total_area || '-', // 評估分區總面積
+                    totalZoneElec: '-', // 耗能分區總年耗電量
+                    te: data?.annual_electricity?.toLocaleString() || '-',
+                    et: '-', // 輸送設備
+                    ep: '-', // 揚水設備
+                    eh: '-', // 加熱設備
+                    ee: data?.special_electricity || '-',
+                    teui: '-', // 總耗電密度
+                    majorEui: '-' // 主設備用電密度
+                }
+            },
+            {
                 id: 'energyIndicators',
-                title: '三、能效指標',
+                title: '五、能效指標',
                 icon: <FileText size={20} />,
                 rows: [
                     { label: '年總用電量', value: `${data?.annual_electricity?.toLocaleString() || 0} kWh`, highlight: true },
@@ -87,7 +116,7 @@ export function BERSeTable({ data }) {
             },
             {
                 id: 'spaceData',
-                title: '四、空間配置',
+                title: '六、空間配置',
                 icon: <FileText size={20} />,
                 rows: data?.spaces?.map((space, i) => ({
                     label: `${space.name} (${space.type && getSpaceTypeName(space.type)})`,
@@ -96,7 +125,7 @@ export function BERSeTable({ data }) {
             },
             {
                 id: 'equipmentData',
-                title: '五、設備資料',
+                title: '七、設備資料',
                 icon: <FileText size={20} />,
                 rows: [
                     ...formatEquipment('空調設備', data?.equipment?.ac),
@@ -107,7 +136,7 @@ export function BERSeTable({ data }) {
             },
             {
                 id: 'calculation',
-                title: '六、能效計算明細',
+                title: '八、能效計算明細',
                 icon: <FileText size={20} />,
                 rows: [
                     { label: '建築總面積', value: `${data?.total_area?.toLocaleString() || 0} m²` },
@@ -137,208 +166,173 @@ export function BERSeTable({ data }) {
             </div>
 
             {/* 評估表內容 */}
-            <div className="space-y-8">
-                {/* 一、建築物及空調基本資料 (客製化表格佈局) */}
-                <div className="bg-white/5 border border-white/10 rounded-xl overflow-hidden">
-                    <button
-                        onClick={() => toggleSection('basicInfo')}
-                        className="w-full px-6 py-4 flex items-center justify-between hover:bg-white/5 transition-colors bg-white/5"
-                    >
-                        <div className="flex items-center gap-3">
-                            <div className="text-blue-400"><FileText size={20} /></div>
-                            <h3 className="text-lg font-bold text-white">一、建築物及空調基本資料</h3>
-                        </div>
-                        {expandedSections.basicInfo ? <ChevronUp size={20} className="text-slate-400" /> : <ChevronDown size={20} className="text-slate-400" />}
-                    </button>
+            <td className="border border-white/20 p-3 text-center text-slate-400 font-light">(m²)</td>
+            <td className="border border-white/20 p-3 bg-white/5 font-bold">評估樓地板面積 Afe</td>
+            <td className="border border-white/20 p-3 text-right text-blue-300 font-medium">{data?.total_area?.toLocaleString() || '-'}</td>
+            <td className="border border-white/20 p-3 text-center text-slate-400 font-light">(m²)</td>
+        </tr>
+                                    {/* 地上樓層 | 地下樓層 */ }
+    <tr>
+        <td className="border border-white/20 p-3 bg-white/5 font-bold">地上總樓層數</td>
+        <td className="border border-white/20 p-3 text-right">{data?.basic_info?.floorsAbove || '-'}</td>
+        <td className="border border-white/20 p-3 text-center text-slate-400 font-light">層</td>
+        <td className="border border-white/20 p-3 bg-white/5 font-bold">地下總樓層數</td>
+        <td className="border border-white/20 p-3 text-right">{data?.basic_info?.floorsBelow || '-'}</td>
+        <td className="border border-white/20 p-3 text-center text-slate-400 font-light">層</td>
+    </tr>
+    {/* 實際耗電量 | 雨中水 */ }
+    <tr>
+        <td className="border border-white/20 p-3 bg-white/5 font-bold">實際年總耗電量</td>
+        <td className="border border-white/20 p-3 text-right">{data?.calculated_eui || '-'}</td>
+        <td className="border border-white/20 p-3 text-center text-slate-400 font-light">kWh/(m².yr)</td>
+        <td className="border border-white/20 p-3 bg-white/5 font-bold">雨中水年利用量</td>
+        <td className="border border-white/20 p-3 text-right">{data?.water_data?.rainwater || '-'}</td>
+        <td className="border border-white/20 p-3 text-center text-slate-400 font-light">m³</td>
+    </tr>
+    {/* 特殊用電 | 城鄉係數 */ }
+    <tr>
+        <td className="border border-white/20 p-3 bg-white/5 font-bold">其他特殊用電 Ee</td>
+        <td className="border border-white/20 p-3 text-right">{data?.special_electricity || '-'}</td>
+        <td className="border border-white/20 p-3 text-center text-slate-400 font-light">kWh/(m².yr)</td>
+        <td className="border border-white/20 p-3 bg-white/5 font-bold">城鄉係數 UR</td>
+        <td className="border border-white/20 p-3 text-right">{data?.ur_coefficient || '1.0'}</td>
+        <td className="border border-white/20 p-3 text-center text-slate-400 font-light"></td>
+    </tr>
+                                </tbody >
+                            </table >
+                        </div >
+                    )
+}
+                </div >
 
-                    {expandedSections.basicInfo && (
-                        <div className="p-6 overflow-x-auto">
-                            <table className="w-full text-sm border-collapse border border-white/20 table-fixed">
-                                <colgroup>
-                                    <col className="w-[20%]" />
-                                    <col className="w-[20%]" />
-                                    <col className="w-[10%]" />
-                                    <col className="w-[20%]" />
-                                    <col className="w-[20%]" />
-                                    <col className="w-[10%]" />
-                                </colgroup>
-                                <tbody className="text-slate-200">
-                                    {/* 建築物名稱 */}
-                                    <tr>
-                                        <td className="border border-white/20 p-3 bg-white/5 font-bold">建築物名稱</td>
-                                        <td className="border border-white/20 p-3" colSpan="5">{data?.building_name || '未命名'}</td>
-                                    </tr>
-                                    {/* 建築物地址 */}
-                                    <tr>
-                                        <td className="border border-white/20 p-3 bg-white/5 font-bold">建築物地址</td>
-                                        <td className="border border-white/20 p-3" colSpan="5">{data?.basic_info?.address || '-'}</td>
-                                    </tr>
-                                    {/* 總樓地板面積 | 評估樓地板面積 */}
-                                    <tr>
-                                        <td className="border border-white/20 p-3 bg-white/5 font-bold">總樓地板面積</td>
-                                        <td className="border border-white/20 p-3 text-right">{data?.total_area?.toLocaleString() || '-'}</td>
-                                        <td className="border border-white/20 p-3 text-center text-slate-400 font-light">(m²)</td>
-                                        <td className="border border-white/20 p-3 bg-white/5 font-bold">評估樓地板面積 Afe</td>
-                                        <td className="border border-white/20 p-3 text-right text-blue-300 font-medium">{data?.total_area?.toLocaleString() || '-'}</td>
-                                        <td className="border border-white/20 p-3 text-center text-slate-400 font-light">(m²)</td>
-                                    </tr>
-                                    {/* 地上樓層 | 地下樓層 */}
-                                    <tr>
-                                        <td className="border border-white/20 p-3 bg-white/5 font-bold">地上總樓層數</td>
-                                        <td className="border border-white/20 p-3 text-right">{data?.basic_info?.floorsAbove || '-'}</td>
-                                        <td className="border border-white/20 p-3 text-center text-slate-400 font-light">層</td>
-                                        <td className="border border-white/20 p-3 bg-white/5 font-bold">地下總樓層數</td>
-                                        <td className="border border-white/20 p-3 text-right">{data?.basic_info?.floorsBelow || '-'}</td>
-                                        <td className="border border-white/20 p-3 text-center text-slate-400 font-light">層</td>
-                                    </tr>
-                                    {/* 實際耗電量 | 雨中水 */}
-                                    <tr>
-                                        <td className="border border-white/20 p-3 bg-white/5 font-bold">實際年總耗電量</td>
-                                        <td className="border border-white/20 p-3 text-right">{data?.calculated_eui || '-'}</td>
-                                        <td className="border border-white/20 p-3 text-center text-slate-400 font-light">kWh/(m².yr)</td>
-                                        <td className="border border-white/20 p-3 bg-white/5 font-bold">雨中水年利用量</td>
-                                        <td className="border border-white/20 p-3 text-right">{data?.water_data?.rainwater || '-'}</td>
-                                        <td className="border border-white/20 p-3 text-center text-slate-400 font-light">m³</td>
-                                    </tr>
-                                    {/* 特殊用電 | 城鄉係數 */}
-                                    <tr>
-                                        <td className="border border-white/20 p-3 bg-white/5 font-bold">其他特殊用電 Ee</td>
-                                        <td className="border border-white/20 p-3 text-right">{data?.special_electricity || '-'}</td>
-                                        <td className="border border-white/20 p-3 text-center text-slate-400 font-light">kWh/(m².yr)</td>
-                                        <td className="border border-white/20 p-3 bg-white/5 font-bold">城鄉係數 UR</td>
-                                        <td className="border border-white/20 p-3 text-right">{data?.ur_coefficient || '1.0'}</td>
-                                        <td className="border border-white/20 p-3 text-center text-slate-400 font-light"></td>
-                                    </tr>
-                                </tbody>
-                            </table>
-                        </div>
-                    )}
-                </div>
-
-                {/* 二、用電信賴度檢驗 (客製化表格佈局) */}
-                <div className="bg-white/5 border border-white/10 rounded-xl overflow-hidden">
-                    <button
-                        onClick={() => toggleSection('reliability')}
-                        className="w-full px-6 py-4 flex items-center justify-between hover:bg-white/5 transition-colors bg-white/5"
-                    >
-                        <div className="flex items-center gap-3">
-                            <div className="text-blue-400"><Activity size={20} /></div>
-                            <h3 className="text-lg font-bold text-white">二、用電信賴度檢驗</h3>
-                        </div>
-                        {expandedSections.reliability ? <ChevronUp size={20} className="text-slate-400" /> : <ChevronDown size={20} className="text-slate-400" />}
-                    </button>
-
-                    {expandedSections.reliability && (
-                        <div className="p-6 overflow-x-auto">
-                            <div className="text-slate-300 mb-2 font-bold bg-white/10 p-2 rounded">
-                                實際年總耗電量 TE 信賴度檢驗：
-                            </div>
-                            <table className="w-full text-sm border-collapse border border-white/20">
-                                <colgroup>
-                                    <col className="w-[40%]" />
-                                    <col className="w-[50%]" />
-                                    <col className="w-[10%]" />
-                                </colgroup>
-                                <tbody className="text-slate-200">
-                                    {/* TE */}
-                                    <tr>
-                                        <td className="border border-white/20 p-3 bg-white/5 font-bold">年總耗電量 TE</td>
-                                        <td className="border border-white/20 p-3 text-right text-lg text-blue-300 font-bold">
-                                            {tableData.find(s => s.id === 'reliability')?.rows[0]?.value}
-                                        </td>
-                                        <td className="border border-white/20 p-3 text-center text-slate-400 font-light">
-                                            {tableData.find(s => s.id === 'reliability')?.rows[0]?.unit}
-                                        </td>
-                                    </tr>
-                                    {/* 變動率 1 */}
-                                    <tr>
-                                        <td className="border border-white/20 p-3 bg-white/5 font-bold">日平均用電量之最大月電量變動率</td>
-                                        <td className="border border-white/20 p-3" colSpan="2">
-                                            <div className="flex items-center justify-end gap-6">
-                                                <label className="flex items-center gap-2">
-                                                    <input type="checkbox" checked={tableData.find(s => s.id === 'reliability')?.rows[1]?.isPass} readOnly className="rounded text-blue-500 bg-white/10 border-white/30" />
-                                                    <span>合格(&lt;50%)</span>
-                                                </label>
-                                                <label className="flex items-center gap-2 opacity-50">
-                                                    <input type="checkbox" checked={!tableData.find(s => s.id === 'reliability')?.rows[1]?.isPass} readOnly className="rounded text-red-500 bg-white/10 border-white/30" />
-                                                    <span>不合格</span>
-                                                </label>
-                                            </div>
-                                        </td>
-                                    </tr>
-                                    {/* 變動率 2 */}
-                                    <tr>
-                                        <td className="border border-white/20 p-3 bg-white/5 font-bold">日平均用電量之年變動率</td>
-                                        <td className="border border-white/20 p-3" colSpan="2">
-                                            <div className="flex items-center justify-end gap-6">
-                                                <label className="flex items-center gap-2">
-                                                    <input type="checkbox" checked={tableData.find(s => s.id === 'reliability')?.rows[2]?.isPass} readOnly className="rounded text-blue-500 bg-white/10 border-white/30" />
-                                                    <span>合格(&lt;50%)</span>
-                                                </label>
-                                                <label className="flex items-center gap-2 opacity-50">
-                                                    <input type="checkbox" checked={!tableData.find(s => s.id === 'reliability')?.rows[2]?.isPass} readOnly className="rounded text-red-500 bg-white/10 border-white/30" />
-                                                    <span>不合格</span>
-                                                </label>
-                                            </div>
-                                        </td>
-                                    </tr>
-                                </tbody>
-                            </table>
-                        </div>
-                    )}
-                </div>
-
-                {/* 其他章節 (過濾掉 basicInfo 和 reliability) */}
-                {tableData.filter(s => s.id !== 'basicInfo' && s.id !== 'reliability').map((section) => (
-                    <div
-                        key={section.id}
-                        className="bg-white/5 border border-white/10 rounded-xl overflow-hidden"
-                    >
-                        {/* 章節標題 */}
-                        <button
-                            onClick={() => toggleSection(section.id)}
-                            className="w-full px-6 py-4 flex items-center justify-between hover:bg-white/5 transition-colors"
-                        >
-                            <div className="flex items-center gap-3">
-                                <div className="text-blue-400">{section.icon}</div>
-                                <h3 className="text-lg font-bold text-white">{section.title}</h3>
-                                <span className="text-sm text-slate-500">({section.rows.length} 項目)</span>
-                            </div>
-                            {expandedSections[section.id] ? (
-                                <ChevronUp size={20} className="text-slate-400" />
-                            ) : (
-                                <ChevronDown size={20} className="text-slate-400" />
-                            )}
-                        </button>
-
-                        {/* 章節內容 */}
-                        {expandedSections[section.id] && (
-                            <div className="px-6 pb-4">
-                                <table className="w-full">
-                                    <tbody>
-                                        {section.rows.map((row, index) => (
-                                            <tr
-                                                key={index}
-                                                className={`border-t border-white/5 ${row.highlight ? 'bg-blue-500/10' : ''
-                                                    }`}
-                                            >
-                                                <td className="py-3 text-slate-400 text-sm w-1/3">
-                                                    {row.label}
-                                                </td>
-                                                <td className={`py-3 text-sm font-medium ${row.highlight ? 'text-blue-400' : 'text-slate-200'
-                                                    }`}>
-                                                    {row.value}
-                                                </td>
-                                            </tr>
-                                        ))}
-                                    </tbody>
-                                </table>
-                            </div>
-                        )}
-                    </div>
-                ))}
+    {/* 二、用電信賴度檢驗 (客製化表格佈局) */ }
+    < div className = "bg-white/5 border border-white/10 rounded-xl overflow-hidden" >
+        <button
+            onClick={() => toggleSection('reliability')}
+            className="w-full px-6 py-4 flex items-center justify-between hover:bg-white/5 transition-colors bg-white/5"
+        >
+            <div className="flex items-center gap-3">
+                <div className="text-blue-400"><Activity size={20} /></div>
+                <h3 className="text-lg font-bold text-white">二、用電信賴度檢驗</h3>
             </div>
+            {expandedSections.reliability ? <ChevronUp size={20} className="text-slate-400" /> : <ChevronDown size={20} className="text-slate-400" />}
+        </button>
+
+{
+    expandedSections.reliability && (
+        <div className="p-6 overflow-x-auto">
+            <div className="text-slate-300 mb-2 font-bold bg-white/10 p-2 rounded">
+                實際年總耗電量 TE 信賴度檢驗：
+            </div>
+            <table className="w-full text-sm border-collapse border border-white/20">
+                <colgroup>
+                    <col className="w-[40%]" />
+                    <col className="w-[50%]" />
+                    <col className="w-[10%]" />
+                </colgroup>
+                <tbody className="text-slate-200">
+                    {/* TE */}
+                    <tr>
+                        <td className="border border-white/20 p-3 bg-white/5 font-bold">年總耗電量 TE</td>
+                        <td className="border border-white/20 p-3 text-right text-lg text-blue-300 font-bold">
+                            {tableData.find(s => s.id === 'reliability')?.rows[0]?.value}
+                        </td>
+                        <td className="border border-white/20 p-3 text-center text-slate-400 font-light">
+                            {tableData.find(s => s.id === 'reliability')?.rows[0]?.unit}
+                        </td>
+                    </tr>
+                    {/* 變動率 1 */}
+                    <tr>
+                        <td className="border border-white/20 p-3 bg-white/5 font-bold">日平均用電量之最大月電量變動率</td>
+                        <td className="border border-white/20 p-3" colSpan="2">
+                            <div className="flex items-center justify-end gap-6">
+                                <label className="flex items-center gap-2">
+                                    <input type="checkbox" checked={tableData.find(s => s.id === 'reliability')?.rows[1]?.isPass} readOnly className="rounded text-blue-500 bg-white/10 border-white/30" />
+                                    <span>合格(&lt;50%)</span>
+                                </label>
+                                <label className="flex items-center gap-2 opacity-50">
+                                    <input type="checkbox" checked={!tableData.find(s => s.id === 'reliability')?.rows[1]?.isPass} readOnly className="rounded text-red-500 bg-white/10 border-white/30" />
+                                    <span>不合格</span>
+                                </label>
+                            </div>
+                        </td>
+                    </tr>
+                    {/* 變動率 2 */}
+                    <tr>
+                        <td className="border border-white/20 p-3 bg-white/5 font-bold">日平均用電量之年變動率</td>
+                        <td className="border border-white/20 p-3" colSpan="2">
+                            <div className="flex items-center justify-end gap-6">
+                                <label className="flex items-center gap-2">
+                                    <input type="checkbox" checked={tableData.find(s => s.id === 'reliability')?.rows[2]?.isPass} readOnly className="rounded text-blue-500 bg-white/10 border-white/30" />
+                                    <span>合格(&lt;50%)</span>
+                                </label>
+                                <label className="flex items-center gap-2 opacity-50">
+                                    <input type="checkbox" checked={!tableData.find(s => s.id === 'reliability')?.rows[2]?.isPass} readOnly className="rounded text-red-500 bg-white/10 border-white/30" />
+                                    <span>不合格</span>
+                                </label>
+                            </div>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
         </div>
+    )
+}
+                </div >
+
+    {/* 其他章節 (過濾掉 basicInfo 和 reliability) */ }
+{
+    tableData.filter(s => s.id !== 'basicInfo' && s.id !== 'reliability').map((section) => (
+        <div
+            key={section.id}
+            className="bg-white/5 border border-white/10 rounded-xl overflow-hidden"
+        >
+            {/* 章節標題 */}
+            <button
+                onClick={() => toggleSection(section.id)}
+                className="w-full px-6 py-4 flex items-center justify-between hover:bg-white/5 transition-colors"
+            >
+                <div className="flex items-center gap-3">
+                    <div className="text-blue-400">{section.icon}</div>
+                    <h3 className="text-lg font-bold text-white">{section.title}</h3>
+                    <span className="text-sm text-slate-500">({section.rows.length} 項目)</span>
+                </div>
+                {expandedSections[section.id] ? (
+                    <ChevronUp size={20} className="text-slate-400" />
+                ) : (
+                    <ChevronDown size={20} className="text-slate-400" />
+                )}
+            </button>
+
+            {/* 章節內容 */}
+            {expandedSections[section.id] && (
+                <div className="px-6 pb-4">
+                    <table className="w-full">
+                        <tbody>
+                            {section.rows.map((row, index) => (
+                                <tr
+                                    key={index}
+                                    className={`border-t border-white/5 ${row.highlight ? 'bg-blue-500/10' : ''
+                                        }`}
+                                >
+                                    <td className="py-3 text-slate-400 text-sm w-1/3">
+                                        {row.label}
+                                    </td>
+                                    <td className={`py-3 text-sm font-medium ${row.highlight ? 'text-blue-400' : 'text-slate-200'
+                                        }`}>
+                                        {row.value}
+                                    </td>
+                                </tr>
+                            ))}
+                        </tbody>
+                    </table>
+                </div>
+            )}
+        </div>
+    ))
+}
+            </div >
+        </div >
     );
 }
 
