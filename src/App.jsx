@@ -1522,7 +1522,7 @@ function Dashboard({ data, onRetry, onVerify, onDemo, loading, error, isLoggedIn
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                 <ElectricityTrendChart
                     data={formatElectricityData()}
-                    years={data.electricity_years || [2023, 2024]}
+                    years={displayData?.electricity_years || [2023, 2024]}
                 />
                 <EquipmentAnalysis
                     equipment={[
