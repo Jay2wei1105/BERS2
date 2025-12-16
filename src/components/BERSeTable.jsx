@@ -43,13 +43,13 @@ export function BERSeTable({ data }) {
                     { label: '建築物名稱', value: data?.building_name || '未命名' },
                     { label: '建築物地址', value: data?.basic_info?.address || '-' },
                     { label: '總樓地板面積', value: `${data?.total_area?.toLocaleString() || 0} m²` },
-                    { label: '評估樓地板面積 Afe', value: `${data?.total_area?.toLocaleString() || 0} m²` },
+                    { label: '評估樓地板面積', value: `${data?.total_area?.toLocaleString() || 0} m²` },
                     { label: '地上總樓層數', value: `${data?.basic_info?.floorsAbove || '-'} 層` },
                     { label: '地下總樓層數', value: `${data?.basic_info?.floorsBelow || '-'} 層` },
                     { label: '實際年總耗電量 (EUI)', value: `${data?.calculated_eui || 0} kWh/(m².yr)` },
                     { label: '雨中水年利用量', value: `${data?.water_data?.rainwater || 0} m³` },
-                    { label: '其他特殊用電 Ee', value: `${data?.special_electricity || 0} kWh/(m².yr)` },
-                    { label: '城鄉係數 UR', value: `${data?.ur_coefficient || 1.0}` },
+                    { label: '其他特殊用電', value: `${data?.special_electricity || 0} kWh/(m².yr)` },
+                    { label: '城鄉係數', value: `${data?.ur_coefficient || 1.0}` },
                     { label: '建築分類', value: getBuildingTypeName(data?.building_type) },
                     { label: '空調系統類型', value: data?.ac_system || '中央空調' },
                     { label: '評估日期', value: formatDate(data?.created_at) }
@@ -59,9 +59,8 @@ export function BERSeTable({ data }) {
                 id: 'reliability',
                 title: '二、用電信賴度檢驗',
                 icon: <ActivityIcon size={20} />,
-                header: '實際年總耗電量 TE 信賴度檢驗：',
                 rows: [
-                    { label: '年總耗電量 TE', value: `${data?.annual_electricity?.toLocaleString() || '-'}`, unit: '(kWh/yr)' },
+                    { label: '年總耗電量', value: `${data?.annual_electricity?.toLocaleString() || '-'}`, unit: '(kWh/yr)' },
                     {
                         label: '日平均用電量之最大月電量變動率',
                         type: 'check',
@@ -80,7 +79,6 @@ export function BERSeTable({ data }) {
                 id: 'exemptionZone',
                 title: '三、BERSe免評估分區資料',
                 icon: <FileText size={20} />,
-                header: '(分區欄位不足時請自行增列)',
                 rows: data?.exemption_zones || [],
                 footer: {
                     totalArea: data?.exemption_total_area || '-',
@@ -91,7 +89,6 @@ export function BERSeTable({ data }) {
                 id: 'consumptionZone',
                 title: '四、BERSe耗能分區資料',
                 icon: <FileText size={20} />,
-                header: '(分區欄位不足時請自行增列)',
                 rows: data?.consumption_zones || [],
                 footer: {
                     assessedArea: data?.total_area || '-',
@@ -110,47 +107,15 @@ export function BERSeTable({ data }) {
                 title: '五、能效指標',
                 icon: <FileText size={20} />,
                 rows: [
-                    { label: 'EUI 最小值 EUImin', value: '-', unit: 'kWh/(m².yr)', label2: 'EUI GB 基準值 EUIg', value2: '-', unit2: 'kWh/(m².yr)' },
-                    { label: 'EUI 中位值 EUIm', value: '-', unit: 'kWh/(m².yr)', label2: 'EUI 最大值 EUImax', value2: '-', unit2: 'kWh/(m².yr)' },
-                    { label: "耗電密度差距 ΔEUI = EUI' - UR × Σ [(AEUIm + LEUIm + EEUIm) × SORi × Afi] / Afe", value: '-', unit: 'kWh/(m².yr)', isWide: true },
-                    { label: '耗電密度指標 EUI* = EUIm + ΔEUI', value: '-', unit: 'kWh/(m².yr)', isWide: true },
-                    { label: '碳排密度指標 CEI* = EUI* × β1 (電力排碳係數=0.495 kgCO2/kWh)', value: '-', unit: 'kgCO2/(m².yr)', isWide: true },
-                    { label: '能效得分計算 SCOREE', value: '-', unit: '分', isWide: true },
+                    { label: 'EUI 最小值', value: '-', unit: 'kWh/(m².yr)', label2: 'EUI GB 基準值 EUIg', value2: '-', unit2: 'kWh/(m².yr)' },
+                    { label: 'EUI 中位值', value: '-', unit: 'kWh/(m².yr)', label2: 'EUI 最大值 EUImax', value2: '-', unit2: 'kWh/(m².yr)' },
+                    { label: "耗電密度差距", value: '-', unit: 'kWh/(m².yr)', isWide: true },
+                    { label: '耗電密度指標', value: '-', unit: 'kWh/(m².yr)', isWide: true },
+                    { label: '碳排密度指標', value: '-', unit: 'kgCO2/(m².yr)', isWide: true },
+                    { label: '能效得分計算', value: '-', unit: '分', isWide: true },
                     { label: '能效等級判定', value: calculateBERSLevel(data?.calculated_eui), unit: '等級', isWide: true, highlight: true }
                 ]
             },
-            {
-                id: 'spaceData',
-                title: '六、空間配置',
-                icon: <FileText size={20} />,
-                rows: data?.spaces?.map((space, i) => ({
-                    label: `${space.name} (${space.type && getSpaceTypeName(space.type)})`,
-                    value: `${space.area} m²`
-                })) || []
-            },
-            {
-                id: 'equipmentData',
-                title: '七、設備資料',
-                icon: <FileText size={20} />,
-                rows: [
-                    ...formatEquipment('空調設備', data?.equipment?.ac),
-                    ...formatEquipment('照明設備', data?.equipment?.lighting),
-                    ...formatEquipment('電梯設備', data?.equipment?.elevator),
-                    ...formatEquipment('機房設備', data?.equipment?.serverRoom)
-                ]
-            },
-            {
-                id: 'calculation',
-                title: '八、能效計算明細',
-                icon: <FileText size={20} />,
-                rows: [
-                    { label: '建築總面積', value: `${data?.total_area?.toLocaleString() || 0} m²` },
-                    { label: '年總用電量', value: `${data?.annual_electricity?.toLocaleString() || 0} kWh` },
-                    { label: 'EUI 計算式', value: '年總用電量 ÷ 建築總面積' },
-                    { label: '計算結果', value: `${((data?.annual_electricity / data?.total_area) || 0).toFixed(2)} kWh/m².yr`, highlight: true },
-                    { label: '等級判定', value: calculateBERSLevel(data?.calculated_eui), highlight: true }
-                ]
-            }
         ];
     };
 
