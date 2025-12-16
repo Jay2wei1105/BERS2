@@ -24,7 +24,8 @@ import {
     Loader2
 } from 'lucide-react';
 import { supabase } from './lib/supabaseClient';
-import { MetricCard, GaugeChart, EfficiencyTable, ComparisonRange, ElectricityTrendChart, EquipmentAnalysis } from './components/DashboardComponents';
+import { MetricCard, GaugeChart, EfficiencyTable } from './components/DashboardComponents';
+import { ComparisonRange, ElectricityTrendChart, EquipmentAnalysis } from './components/DashboardCharts';
 import { BERSeTable } from './components/BERSeTable';
 import { DEMO_DATA } from './data/demoData';
 import { zoneParameters } from './data/zoneParameters';
