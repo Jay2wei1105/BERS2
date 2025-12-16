@@ -1411,10 +1411,10 @@ function Dashboard({ data, onRetry, onVerify, onDemo, loading, error, isLoggedIn
     let rating = '待改善';
     let color = 'text-red-400';
 
-    if (euiValue < 100) { level = 5; rating = '1+ 級 (鑽石級)'; color = 'text-emerald-400'; }
-    else if (euiValue < 140) { level = 4; rating = '1 級 (黃金級)'; color = 'text-green-400'; }
-    else if (euiValue < 180) { level = 3; rating = '2 級 (銀級)'; color = 'text-yellow-400'; }
-    else if (euiValue < 220) { level = 2; rating = '3 級 (合格)'; color = 'text-orange-400'; }
+    if (euiValue < 100) { level = 5; rating = '1+ 級 (鑽石級)'; color = 'text-cyan-400'; }
+    else if (euiValue < 140) { level = 4; rating = '1 級 (黃金級)'; color = 'text-amber-400'; }
+    else if (euiValue < 180) { level = 3; rating = '2 級 (銀級)'; color = 'text-slate-400'; }
+    else if (euiValue < 220) { level = 2; rating = '3 級 (合格)'; color = 'text-green-400'; }
 
     // 计算总分（简化版：100 - EUI相对值）
     const totalScore = Math.max(10, Math.min(100, 100 - (euiValue - 80) / 2)).toFixed(0);
