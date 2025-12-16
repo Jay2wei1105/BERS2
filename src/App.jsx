@@ -1317,9 +1317,6 @@ function Dashboard({ data, onRetry, onVerify, onDemo, loading, error, isLoggedIn
     const [formState, setFormState] = useState({ email: '', name: '' });
     const [showLoginForm, setShowLoginForm] = useState(false);
 
-    // 诊断日志
-    console.log('Dashboard rendered:', { data, isLoggedIn, isDemoMode, DEMO_DATA });
-
     const handleInputChange = (field, value) => {
         setFormState(prev => ({ ...prev, [field]: value }));
     };
@@ -1332,8 +1329,6 @@ function Dashboard({ data, onRetry, onVerify, onDemo, loading, error, isLoggedIn
     // === 使用Demo数据或实际数据 ===
     const displayData = data || DEMO_DATA;
     const isDemo = !data || isDemoMode;
-
-    console.log('Using displayData:', displayData, 'isDemo:', isDemo);
 
     // === 数据计算 ===
     const area = parseFloat(displayData?.total_area ?? displayData?.totalArea) || 1000;
@@ -1446,7 +1441,7 @@ function Dashboard({ data, onRetry, onVerify, onDemo, loading, error, isLoggedIn
                     {!isDemo && (
                         <div className="flex items-center gap-2 text-slate-400">
                             <span className="bg-white/10 px-2 py-0.5 rounded text-xs border border-white/10">專案</span>
-                            <span>{displayData.building_name || displayData.basic_info?.companyName || '未命名建築'}</span>
+                            <span>{displayData?.building_name || displayData?.basic_info?.companyName || '未命名建築'}</span>
                         </div>
                     )}
                 </div>
