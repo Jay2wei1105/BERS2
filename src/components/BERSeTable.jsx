@@ -53,8 +53,29 @@ export function BERSeTable({ data }) {
                 ]
             },
             {
+                id: 'reliability',
+                title: '二、用電信賴度檢驗',
+                icon: <Activity size={20} />,
+                header: '實際年總耗電量 TE 信賴度檢驗：',
+                rows: [
+                    { label: '年總耗電量 TE', value: `${data?.annual_electricity?.toLocaleString() || '-'}`, unit: '(kWh/yr)' },
+                    {
+                        label: '日平均用電量之最大月電量變動率',
+                        type: 'check',
+                        isPass: true, // 暫時預設合格，後續可接計算邏輯
+                        conditions: ['合格(<50%)', '不合格']
+                    },
+                    {
+                        label: '日平均用電量之年變動率',
+                        type: 'check',
+                        isPass: true,
+                        conditions: ['合格(<50%)', '不合格']
+                    }
+                ]
+            },
+            {
                 id: 'energyIndicators',
-                title: '二、能效指標',
+                title: '三、能效指標',
                 icon: <FileText size={20} />,
                 rows: [
                     { label: '年總用電量', value: `${data?.annual_electricity?.toLocaleString() || 0} kWh`, highlight: true },
@@ -66,7 +87,7 @@ export function BERSeTable({ data }) {
             },
             {
                 id: 'spaceData',
-                title: '三、空間配置',
+                title: '四、空間配置',
                 icon: <FileText size={20} />,
                 rows: data?.spaces?.map((space, i) => ({
                     label: `${space.name} (${space.type && getSpaceTypeName(space.type)})`,
@@ -75,7 +96,7 @@ export function BERSeTable({ data }) {
             },
             {
                 id: 'equipmentData',
-                title: '四、設備資料',
+                title: '五、設備資料',
                 icon: <FileText size={20} />,
                 rows: [
                     ...formatEquipment('空調設備', data?.equipment?.ac),
@@ -86,7 +107,7 @@ export function BERSeTable({ data }) {
             },
             {
                 id: 'calculation',
-                title: '五、能效計算明細',
+                title: '六、能效計算明細',
                 icon: <FileText size={20} />,
                 rows: [
                     { label: '建築總面積', value: `${data?.total_area?.toLocaleString() || 0} m²` },
@@ -194,8 +215,81 @@ export function BERSeTable({ data }) {
                     )}
                 </div>
 
-                {/* 其他章節 (使用通用渲染) */}
-                {tableData.filter(s => s.id !== 'basicInfo').map((section) => (
+                {/* 二、用電信賴度檢驗 (客製化表格佈局) */}
+                <div className="bg-white/5 border border-white/10 rounded-xl overflow-hidden">
+                    <button
+                        onClick={() => toggleSection('reliability')}
+                        className="w-full px-6 py-4 flex items-center justify-between hover:bg-white/5 transition-colors bg-white/5"
+                    >
+                        <div className="flex items-center gap-3">
+                            <div className="text-blue-400"><Activity size={20} /></div>
+                            <h3 className="text-lg font-bold text-white">二、用電信賴度檢驗</h3>
+                        </div>
+                        {expandedSections.reliability ? <ChevronUp size={20} className="text-slate-400" /> : <ChevronDown size={20} className="text-slate-400" />}
+                    </button>
+
+                    {expandedSections.reliability && (
+                        <div className="p-6 overflow-x-auto">
+                            <div className="text-slate-300 mb-2 font-bold bg-white/10 p-2 rounded">
+                                實際年總耗電量 TE 信賴度檢驗：
+                            </div>
+                            <table className="w-full text-sm border-collapse border border-white/20">
+                                <colgroup>
+                                    <col className="w-[40%]" />
+                                    <col className="w-[50%]" />
+                                    <col className="w-[10%]" />
+                                </colgroup>
+                                <tbody className="text-slate-200">
+                                    {/* TE */}
+                                    <tr>
+                                        <td className="border border-white/20 p-3 bg-white/5 font-bold">年總耗電量 TE</td>
+                                        <td className="border border-white/20 p-3 text-right text-lg text-blue-300 font-bold">
+                                            {tableData.find(s => s.id === 'reliability')?.rows[0]?.value}
+                                        </td>
+                                        <td className="border border-white/20 p-3 text-center text-slate-400 font-light">
+                                            {tableData.find(s => s.id === 'reliability')?.rows[0]?.unit}
+                                        </td>
+                                    </tr>
+                                    {/* 變動率 1 */}
+                                    <tr>
+                                        <td className="border border-white/20 p-3 bg-white/5 font-bold">日平均用電量之最大月電量變動率</td>
+                                        <td className="border border-white/20 p-3" colSpan="2">
+                                            <div className="flex items-center justify-end gap-6">
+                                                <label className="flex items-center gap-2">
+                                                    <input type="checkbox" checked={tableData.find(s => s.id === 'reliability')?.rows[1]?.isPass} readOnly className="rounded text-blue-500 bg-white/10 border-white/30" />
+                                                    <span>合格(&lt;50%)</span>
+                                                </label>
+                                                <label className="flex items-center gap-2 opacity-50">
+                                                    <input type="checkbox" checked={!tableData.find(s => s.id === 'reliability')?.rows[1]?.isPass} readOnly className="rounded text-red-500 bg-white/10 border-white/30" />
+                                                    <span>不合格</span>
+                                                </label>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                    {/* 變動率 2 */}
+                                    <tr>
+                                        <td className="border border-white/20 p-3 bg-white/5 font-bold">日平均用電量之年變動率</td>
+                                        <td className="border border-white/20 p-3" colSpan="2">
+                                            <div className="flex items-center justify-end gap-6">
+                                                <label className="flex items-center gap-2">
+                                                    <input type="checkbox" checked={tableData.find(s => s.id === 'reliability')?.rows[2]?.isPass} readOnly className="rounded text-blue-500 bg-white/10 border-white/30" />
+                                                    <span>合格(&lt;50%)</span>
+                                                </label>
+                                                <label className="flex items-center gap-2 opacity-50">
+                                                    <input type="checkbox" checked={!tableData.find(s => s.id === 'reliability')?.rows[2]?.isPass} readOnly className="rounded text-red-500 bg-white/10 border-white/30" />
+                                                    <span>不合格</span>
+                                                </label>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    )}
+                </div>
+
+                {/* 其他章節 (過濾掉 basicInfo 和 reliability) */}
+                {tableData.filter(s => s.id !== 'basicInfo' && s.id !== 'reliability').map((section) => (
                     <div
                         key={section.id}
                         className="bg-white/5 border border-white/10 rounded-xl overflow-hidden"
