@@ -99,37 +99,34 @@ export function GaugeChart({ value, max = 300, currentLevel, title = "建築能�
 
     // Compact模式 - 炫酷視覺 + 獎章風格
     if (compact) {
-        // 定義漸變色
-        const gradients = [
-            { id: 'grad-diamond', stops: ['#22d3ee', '#0ea5e9'] }, // 青 -> 藍
-            { id: 'grad-gold', stops: ['#fde047', '#eab308'] },    // 黃 -> 金
-            { id: 'grad-silver', stops: ['#e2e8f0', '#94a3b8'] },  // 灰白 -> 銀灰
-            { id: 'grad-bronze', stops: ['#fdba74', '#f97316'] },  // 淺橘 -> 深橘
-            { id: 'grad-bad', stops: ['#fca5a5', '#ef4444'] }      // 淺紅 -> 深紅
+        // 定義7級漸變色（平滑過渡，無斷層）
+        const sevenLevelGradient = [
+            { offset: '0%', color: '#10b981' },    // 1+ 鑽石級 - 綠色
+            { offset: '14.3%', color: '#22c55e' }, // 1 黃金級 - 亮綠
+            { offset: '28.6%', color: '#84cc16' }, // 2 銀級 - 黃綠
+            { offset: '42.9%', color: '#eab308' }, // 3 合格 - 黃色
+            { offset: '57.1%', color: '#f59e0b' }, // 4 待改善 - 琥珀
+            { offset: '71.4%', color: '#f97316' }, // 5 不合格 - 橘色
+            { offset: '85.7%', color: '#ef4444' }, // 6 極差 - 紅色
+            { offset: '100%', color: '#dc2626' }   // 7 危險 - 深紅
         ];
 
-        // 根據當前數值決定顏色主題
+        // 根據當前數值決定主題顏色（用於光暈和邊框）
         let themeColor = '#ef4444';
-        let themeGradientId = 'grad-bad';
         let badgeColorClass = 'bg-red-500/20 text-red-400 border-red-500/50';
-        let glowColor = 'rgba(239, 68, 68, 0.5)';
 
         if (value <= 100) {
-            themeColor = '#0ea5e9'; themeGradientId = 'grad-diamond';
-            badgeColorClass = 'bg-cyan-500/20 text-cyan-400 border-cyan-400/50 from-cyan-900/40 to-blue-900/40';
-            glowColor = 'rgba(14, 165, 233, 0.8)'; // 鑽石藍光
+            themeColor = '#10b981';
+            badgeColorClass = 'bg-emerald-500/20 text-emerald-400 border-emerald-400/50';
         } else if (value <= 140) {
-            themeColor = '#eab308'; themeGradientId = 'grad-gold';
-            badgeColorClass = 'bg-yellow-500/20 text-yellow-400 border-yellow-400/50 from-yellow-900/40 to-amber-900/40';
-            glowColor = 'rgba(234, 179, 8, 0.6)';
+            themeColor = '#22c55e';
+            badgeColorClass = 'bg-green-500/20 text-green-400 border-green-400/50';
         } else if (value <= 180) {
-            themeColor = '#94a3b8'; themeGradientId = 'grad-silver';
-            badgeColorClass = 'bg-slate-400/20 text-slate-300 border-slate-400/50 from-slate-800/40 to-gray-800/40';
-            glowColor = 'rgba(148, 163, 184, 0.6)';
+            themeColor = '#eab308';
+            badgeColorClass = 'bg-yellow-500/20 text-yellow-400 border-yellow-400/50';
         } else if (value <= 220) {
-            themeColor = '#f97316'; themeGradientId = 'grad-bronze';
-            badgeColorClass = 'bg-orange-500/20 text-orange-400 border-orange-400/50 from-orange-900/40 to-red-900/40';
-            glowColor = 'rgba(249, 115, 22, 0.6)';
+            themeColor = '#f97316';
+            badgeColorClass = 'bg-orange-500/20 text-orange-400 border-orange-400/50';
         }
 
         return (
@@ -140,19 +137,18 @@ export function GaugeChart({ value, max = 300, currentLevel, title = "建築能�
                     style={{ background: themeColor }}
                 ></div>
 
-                {/* SVG指針 (帶濾鏡) */}
-                <svg viewBox="0 0 200 120" className="w-full h-24 mb-2 relative z-10 drop-shadow-lg">
+                {/* SVG指針 (帶7級漸變) */}
+                <svg viewBox="0 0 200 120" className="w-full h-24 mb-4 relative z-10">
                     <defs>
-                        {/* 定義漸變 */}
-                        {gradients.map(g => (
-                            <linearGradient key={g.id} id={g.id} x1="0%" y1="0%" x2="100%" y2="0%">
-                                <stop offset="0%" stopColor={g.stops[0]} />
-                                <stop offset="100%" stopColor={g.stops[1]} />
-                            </linearGradient>
-                        ))}
+                        {/* 定義7級平滑漸變 */}
+                        <linearGradient id="seven-level-gradient" x1="0%" y1="0%" x2="100%" y2="0%">
+                            {sevenLevelGradient.map((stop, i) => (
+                                <stop key={i} offset={stop.offset} stopColor={stop.color} />
+                            ))}
+                        </linearGradient>
                         {/* 發光濾鏡 */}
                         <filter id="glow" x="-50%" y="-50%" width="200%" height="200%">
-                            <feGaussianBlur stdDeviation="4" result="coloredBlur" />
+                            <feGaussianBlur stdDeviation="3" result="coloredBlur" />
                             <feMerge>
                                 <feMergeNode in="coloredBlur" />
                                 <feMergeNode in="SourceGraphic" />
@@ -163,22 +159,21 @@ export function GaugeChart({ value, max = 300, currentLevel, title = "建築能�
                     {/* 背景軌道 */}
                     <path d="M 30 100 A 70 70 0 0 1 170 100" fill="none" stroke="rgba(255,255,255,0.1)" strokeWidth="12" strokeLinecap="round" />
 
-                    {/* 有色進度條 (帶漸變和發光) */}
-                    {/* 使用 strokeDasharray 實現進度動畫 */}
+                    {/* 7級漸變進度條 */}
                     <path
                         d="M 30 100 A 70 70 0 0 1 170 100"
                         fill="none"
-                        stroke={`url(#${themeGradientId})`}
+                        stroke="url(#seven-level-gradient)"
                         strokeWidth="12"
                         strokeLinecap="round"
                         strokeDasharray="220"
-                        strokeDashoffset={220 - (percentage * 220)} // 220是近似弧長
+                        strokeDashoffset={220 - (percentage * 220)}
                         className="transition-all duration-1000 ease-out"
                         filter="url(#glow)"
                         opacity="0.9"
                     />
 
-                    {/* 指針 (更銳利的設計) */}
+                    {/* 指針 */}
                     <g className="transition-all duration-1000 ease-out" style={{ transformOrigin: '100px 100px', transform: `rotate(${angle}deg)` }}>
                         {/* 指針陰影 */}
                         <line x1="100" y1="100" x2="100" y2="35" stroke="rgba(0,0,0,0.5)" strokeWidth="4" strokeLinecap="round" transform="translate(2, 2)" />
@@ -189,14 +184,8 @@ export function GaugeChart({ value, max = 300, currentLevel, title = "建築能�
                     </g>
                 </svg>
 
-                {/* 數值顯示 */}
+                {/* 等級顯示（直接放在下方，無數字） */}
                 <div className="text-center relative z-10">
-                    <div className="text-4xl font-bold text-white mb-1 drop-shadow-md tracking-tight" style={{ textShadow: `0 0 20px ${glowColor}` }}>
-                        {value.toFixed(1)}
-                    </div>
-                    <div className="text-xs text-slate-400 font-medium tracking-wide uppercase mb-3">kWh/m².yr</div>
-
-                    {/* 獎章風格的等級顯示 */}
                     <div className={`inline-flex items-center gap-2 px-4 py-1.5 rounded-full border bg-gradient-to-r shadow-lg transition-all duration-500 ${badgeColorClass}`}>
                         {/* 獎章圖示 */}
                         <span className="text-lg">🏅</span>

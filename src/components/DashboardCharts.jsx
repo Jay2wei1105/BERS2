@@ -26,92 +26,123 @@ export function ComparisonRange({ buildingType, yourValue, percentile }) {
     // 確定當前級別
     let currentCategory = 'poor';
     let categoryColor = 'text-red-400';
+    let categoryBg = 'bg-red-500';
+    let categoryGlow = 'rgba(239, 68, 68, 0.4)';
     let categoryLabel = '需改善';
 
     if (yourValue <= range.excellent) {
         currentCategory = 'excellent';
         categoryColor = 'text-emerald-400';
+        categoryBg = 'bg-emerald-500';
+        categoryGlow = 'rgba(16, 185, 129, 0.4)';
         categoryLabel = '優秀';
     } else if (yourValue <= range.good) {
         currentCategory = 'good';
         categoryColor = 'text-green-400';
+        categoryBg = 'bg-green-500';
+        categoryGlow = 'rgba(34, 197, 94, 0.4)';
         categoryLabel = '良好';
     } else if (yourValue <= range.average) {
         currentCategory = 'average';
         categoryColor = 'text-yellow-400';
+        categoryBg = 'bg-yellow-500';
+        categoryGlow = 'rgba(234, 179, 8, 0.4)';
         categoryLabel = '一般';
     } else if (yourValue <= range.poor) {
         currentCategory = 'poor';
         categoryColor = 'text-orange-400';
+        categoryBg = 'bg-orange-500';
+        categoryGlow = 'rgba(249, 115, 22, 0.4)';
         categoryLabel = '待改善';
     }
 
     return (
-        <div className="bg-white/5 backdrop-blur-md border border-white/10 rounded-3xl p-6">
-            <h3 className="text-lg font-bold text-white mb-2 flex items-center gap-2">
-                <span className="w-1 h-6 bg-purple-500 rounded-full"></span>
-                同類建築能效率比較
+        <div className="bg-gradient-to-br from-white/10 to-white/5 backdrop-blur-xl border border-white/10 rounded-3xl p-8 hover-lift relative overflow-hidden">
+            {/* 背景裝飾光暈 */}
+            <div
+                className="absolute top-0 right-0 w-64 h-64 rounded-full blur-[120px] opacity-10 pointer-events-none"
+                style={{ background: categoryGlow }}
+            ></div>
+
+            {/* 標題 */}
+            <h3 className="text-lg font-bold text-white mb-2 flex items-center gap-2 relative z-10">
+                <span className="w-1 h-6 bg-gradient-to-b from-purple-500 to-purple-600 rounded-full shadow-lg"></span>
+                同類建築能效等比較
             </h3>
-            <p className="text-sm text-slate-400 mb-6">
-                {buildingType === 'office' ? '辦公類' : '其他類型'} 建築能效分布
+            <p className="text-sm text-slate-400 mb-8 relative z-10">
+                群公用 建築能效分布
             </p>
 
-            {/* 區間條 */}
-            <div className="relative h-16 mb-4">
-                {/* 背景漸變條 */}
-                <div className="absolute inset-0 rounded-full overflow-hidden flex">
-                    <div className="h-full bg-emerald-500/30" style={{ width: `${(range.excellent / max) * 100}%` }}></div>
-                    <div className="h-full bg-green-500/30" style={{ width: `${((range.good - range.excellent) / max) * 100}%` }}></div>
-                    <div className="h-full bg-yellow-500/30" style={{ width: `${((range.average - range.good) / max) * 100}%` }}></div>
-                    <div className="h-full bg-orange-500/30" style={{ width: `${((range.poor - range.average) / max) * 100}%` }}></div>
-                    <div className="h-full bg-red-500/30" style={{ width: `${((max - range.poor) / max) * 100}%` }}></div>
+            {/* 進度條區域 */}
+            <div className="relative mb-6">
+                {/* 7級平滑漸變條 */}
+                <div className="relative h-12 rounded-full overflow-hidden shadow-inner">
+                    <div
+                        className="absolute inset-0 rounded-full"
+                        style={{
+                            background: 'linear-gradient(to right, #10b981 0%, #22c55e 16%, #84cc16 33%, #eab308 50%, #f59e0b 66%, #f97316 83%, #ef4444 100%)'
+                        }}
+                    ></div>
+                    {/* 半透明覆蓋層增加深度 */}
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent rounded-full"></div>
                 </div>
 
-                {/* 當前位置標記 */}
+                {/* 當前位置指示器 */}
                 <div
-                    className="absolute top-0 h-full flex items-center transition-all duration-1000"
-                    style={{ left: `${position}%`, transform: 'translateX(-50%)' }}
+                    className="absolute top-1/2 -translate-y-1/2 transition-all duration-1000 ease-out"
+                    style={{ left: `${position}%`, transform: 'translateX(-50%) translateY(-50%)' }}
                 >
-                    <div className="relative">
-                        {/* 箭頭 */}
-                        <div className={`w-0.5 h-20 ${categoryColor.replace('text-', 'bg-')}`}></div>
-                        {/* 值標籤 */}
-                        <div className={`absolute -top-8 left-1/2 -translate-x-1/2 px-3 py-1 rounded-full ${categoryColor.replace('text-', 'bg-')}/20 border ${categoryColor.replace('text-', 'border-')} whitespace-nowrap`}>
-                            <span className={`text-sm font-bold ${categoryColor}`}>{yourValue}</span>
-                        </div>
-                        {/* 圓點 */}
-                        <div className={`absolute -bottom-1 left-1/2 -translate-x-1/2 w-4 h-4 rounded-full ${categoryColor.replace('text-', 'bg-')} border-2 border-white animate-pulse`}></div>
+                    {/* 發光環 */}
+                    <div
+                        className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-10 h-10 rounded-full animate-pulse"
+                        style={{ background: categoryGlow, filter: 'blur(8px)' }}
+                    ></div>
+
+                    {/* 指示圓點 */}
+                    <div className={`relative w-6 h-6 ${categoryBg} rounded-full border-4 border-white shadow-2xl z-10`}>
+                        {/* 內部光點 */}
+                        <div className="absolute inset-1 bg-white/50 rounded-full"></div>
+                    </div>
+
+                    {/* 數值標籤 */}
+                    <div className={`absolute -top-12 left-1/2 -translate-x-1/2 px-4 py-1.5 rounded-full ${categoryBg}/90 backdrop-blur-sm border border-white/20 shadow-lg whitespace-nowrap`}>
+                        <span className="text-sm font-bold text-white">{yourValue}</span>
                     </div>
                 </div>
             </div>
 
             {/* 刻度標籤 */}
-            <div className="relative h-6 mb-4">
+            <div className="relative h-6 mb-8">
                 {[
-                    { value: range.excellent, label: '優秀' },
-                    { value: range.good, label: '良好' },
-                    { value: range.average, label: '一般' },
-                    { value: range.poor, label: '待改善' }
+                    { value: 80, label: '80' },
+                    { value: 120, label: '120' },
+                    { value: 160, label: '160' },
+                    { value: 200, label: '200' }
                 ].map((mark, index) => (
                     <div
                         key={index}
-                        className="absolute top-0 text-xs text-slate-500"
+                        className="absolute top-0 text-xs text-slate-500 font-medium"
                         style={{ left: `${(mark.value / max) * 100}%`, transform: 'translateX(-50%)' }}
                     >
-                        {mark.value}
+                        {mark.label}
                     </div>
                 ))}
             </div>
 
-            {/* 統計信息 */}
-            <div className="grid grid-cols-2 gap-4 mt-6">
-                <div className="text-center p-3 bg-white/5 rounded-xl">
-                    <p className="text-slate-400 text-xs mb-1">您的表現</p>
-                    <p className={`text-lg font-bold ${categoryColor}`}>{categoryLabel}</p>
+            {/* 統計卡片 - 改進設計 */}
+            <div className="grid grid-cols-2 gap-4 relative z-10">
+                <div className="bg-gradient-to-br from-white/10 to-white/5 backdrop-blur-sm border border-white/10 rounded-2xl p-4 hover:scale-105 transition-transform">
+                    <p className="text-slate-400 text-xs font-medium mb-2">能源密度</p>
+                    <div className="flex items-baseline gap-2">
+                        <p className={`text-2xl font-bold ${categoryColor}`}>{categoryLabel}</p>
+                    </div>
                 </div>
-                <div className="text-center p-3 bg-white/5 rounded-xl">
-                    <p className="text-slate-400 text-xs mb-1">優於同類</p>
-                    <p className="text-lg font-bold text-white">{percentile}%</p>
+                <div className="bg-gradient-to-br from-white/10 to-white/5 backdrop-blur-sm border border-white/10 rounded-2xl p-4 hover:scale-105 transition-transform">
+                    <p className="text-slate-400 text-xs font-medium mb-2">總體預測</p>
+                    <div className="flex items-baseline gap-1">
+                        <p className="text-2xl font-bold text-white">{percentile}</p>
+                        <span className="text-lg text-slate-400">%</span>
+                    </div>
                 </div>
             </div>
         </div>
