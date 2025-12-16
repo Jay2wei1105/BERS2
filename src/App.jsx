@@ -24,6 +24,19 @@ import {
 } from 'lucide-react';
 import { supabase } from './lib/supabaseClient';
 
+// 导入新的 Dashboard 组件
+import {
+    MetricCard,
+    GaugeChart,
+    EfficiencyTable
+} from './components/DashboardComponents';
+
+import {
+    ComparisonRange,
+    ElectricityTrendChart,
+    EquipmentAnalysis
+} from './components/DashboardCharts';
+
 // --- 主要應用程式元件 ---
 export default function App() {
     const [currentPage, setCurrentPage] = useState('home');
@@ -112,7 +125,7 @@ export default function App() {
                 {currentPage === 'home' && <HomePage navigateTo={navigateTo} />}
 
                 {/* 其他頁面的容器 */}
-                {(currentPage === 'form' || currentPage === 'dashboard') && (
+                {(currentPage === 'form' || currentPage === 'dashboard' || currentPage === 'test') && (
                     <div className="pt-32 pb-20 px-4 md:px-8 max-w-7xl mx-auto w-full flex-grow animate-in fade-in slide-in-from-bottom-4 duration-700">
                         {currentPage === 'form' && (
                             <AnalysisForm
@@ -127,6 +140,25 @@ export default function App() {
                                 loading={dashboardLoading}
                                 error={dashboardError}
                             />
+                        )}
+                        {/* 临时测试：验证新组件导入 */}
+                        {currentPage === 'test' && (
+                            <div className="p-8 space-y-6">
+                                <h1 className="text-3xl font-bold text-white">组件导入测试</h1>
+                                <MetricCard
+                                    title="测试卡片"
+                                    value="150"
+                                    unit="test"
+                                    icon={Zap}
+                                    color="blue"
+                                />
+                                <button
+                                    onClick={() => navigateTo('home')}
+                                    className="px-4 py-2 bg-blue-500 text-white rounded"
+                                >
+                                    返回首页
+                                </button>
+                            </div>
                         )}
                     </div>
                 )}
@@ -1259,7 +1291,7 @@ function InputField({ label, type = "text", ...props }) {
     );
 }
 
-// --- 元件 4: 儀表板 (Dark Glassmorphism + Firestore Data) ---
+// --- 元件 4: 儀表板 (专业 BERS Dashboard) ---
 function Dashboard({ data, onRetry, onVerify, loading, error }) {
     const [formState, setFormState] = useState({ email: '', name: '' });
 
@@ -1272,22 +1304,44 @@ function Dashboard({ data, onRetry, onVerify, loading, error }) {
         onVerify?.(formState.email.trim(), formState.name.trim());
     };
 
+    // === 数据计算 ===
     const area = parseFloat(data?.total_area ?? data?.totalArea) || 1000;
     const elec = parseFloat(data?.annual_electricity ?? data?.annualElectricity) || 150000;
-    const eui = (elec / area).toFixed(1);
+    const euiValue = elec / area;
+    const eui = euiValue.toFixed(1);
 
+    // 计算排碳量（电力排碳系数 0.502 kgCO2/kWh）
+    const carbonEmission = (elec * 0.502 / 1000).toFixed(2); // 吨CO2
+
+    // 计算BERS等级
     let level = 1;
     let rating = '待改善';
     let color = 'text-red-400';
-    let barColor = 'bg-red-500';
 
-    if (eui < 100) { level = 5; rating = '1+ 級 (鑽石級)'; color = 'text-emerald-400'; barColor = 'bg-emerald-500'; }
-    else if (eui < 140) { level = 4; rating = '1 級 (黃金級)'; color = 'text-green-400'; barColor = 'bg-green-500'; }
-    else if (eui < 180) { level = 3; rating = '2 級 (銀級)'; color = 'text-yellow-400'; barColor = 'bg-yellow-500'; }
-    else if (eui < 220) { level = 2; rating = '3 級 (合格)'; color = 'text-orange-400'; barColor = 'bg-orange-500'; }
+    if (euiValue < 100) { level = 5; rating = '1+ 级 (钻石级)'; color = 'text-emerald-400'; }
+    else if (euiValue < 140) { level = 4; rating = '1 级 (黄金级)'; color = 'text-green-400'; }
+    else if (euiValue < 180) { level = 3; rating = '2 级 (银级)'; color = 'text-yellow-400'; }
+    else if (euiValue < 220) { level = 2; rating = '3 级 (合格)'; color = 'text-orange-400'; }
+
+    // 计算总分（简化版：100 - EUI相对值）
+    const totalScore = Math.max(10, Math.min(100, 100 - (euiValue - 80) / 2)).toFixed(0);
+
+    // 格式化电费趋势数据
+    const formatElectricityData = () => {
+        if (!data?.electricity_data) return [];
+
+        const monthLabels = ['1月', '2月', '3月', '4月', '5月', '6月', '7月', '8月', '9月', '10月', '11月', '12月'];
+
+        return monthLabels.map((month, index) => ({
+            month,
+            year2023: data.electricity_data[index]?.[0] || 0,
+            year2024: data.electricity_data[index]?.[1] || 0
+        }));
+    };
 
     return (
         <div className="animate-in fade-in zoom-in duration-500 space-y-8">
+            {/* 查询表单 */}
             <form onSubmit={handleVerifySubmit} className="bg-white/5 backdrop-blur-md border border-white/10 rounded-3xl p-6 space-y-4">
                 <div>
                     <h2 className="text-xl font-semibold text-white">查看我的分析報告</h2>
@@ -1341,6 +1395,7 @@ function Dashboard({ data, onRetry, onVerify, loading, error }) {
 
             {data && (
                 <>
+                    {/* 报告标题 */}
                     <div className="flex flex-col md:flex-row justify-between items-end mb-8 gap-4 text-white">
                         <div>
                             <h2 className="text-3xl font-bold mb-1">評估結果報告</h2>
@@ -1355,57 +1410,114 @@ function Dashboard({ data, onRetry, onVerify, loading, error }) {
                         </div>
                     </div>
 
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-                        <div className="bg-gradient-to-br from-slate-800 to-slate-900 border border-white/10 p-6 rounded-3xl shadow-xl relative overflow-hidden text-white">
-                            <div className="absolute top-0 right-0 p-6 opacity-5"><Zap size={100} /></div>
-                            <p className="text-slate-400 text-sm font-medium mb-2">能源使用強度 EUI</p>
-                            <div className="text-5xl font-bold tracking-tight">{eui} <span className="text-lg font-normal text-slate-500">kWh/m²·yr</span></div>
-                            <div className="mt-4 flex items-center gap-2 text-emerald-400 text-sm">
-                                <CheckCircle2 size={16} /> 數據已雲端同步
-                            </div>
-                        </div>
-
-                        <div className="bg-white/5 backdrop-blur-md border border-white/10 p-6 rounded-3xl shadow-sm relative text-white">
-                            <p className="text-slate-400 text-sm font-medium mb-2">BERS 能效等級</p>
-                            <div className={`text-3xl font-bold ${color} mb-2`}>{rating}</div>
-                            <div className="w-full h-3 bg-white/10 rounded-full overflow-hidden">
-                                <div className={`h-full ${barColor} transition-all duration-1000 ease-out`} style={{ width: `${level * 20}%` }}></div>
-                            </div>
-                            <p className="mt-2 text-xs text-slate-500 text-right">優於 65% 同類型建築</p>
-                        </div>
-
-                        <div className="bg-white/5 backdrop-blur-md border border-white/10 p-6 rounded-3xl shadow-sm text-white">
-                            <p className="text-slate-400 text-sm font-medium mb-2">淨零碳排潛力</p>
-                            <div className="text-3xl font-bold text-slate-200 mb-1">高潛力</div>
-                            <p className="text-slate-400 text-sm leading-snug">
-                                根據您的數據，導入 EMS 系統可再降低 15% 能耗。
-                            </p>
+                    {/* === 1. 关键指标卡片（4列）=== */}
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                        <MetricCard
+                            title="建筑 EUI"
+                            value={eui}
+                            unit="kWh/m².yr"
+                            trend="down"
+                            trendValue="-5.2%"
+                            icon={Zap}
+                            color="blue"
+                        />
+                        <MetricCard
+                            title="排碳量"
+                            value={carbonEmission}
+                            unit="吨CO2/yr"
+                            trend="down"
+                            trendValue="-3.1%"
+                            icon={Leaf}
+                            color="green"
+                        />
+                        <MetricCard
+                            title="总和得分"
+                            value={totalScore}
+                            unit="分"
+                            trend="up"
+                            trendValue="+2.5%"
+                            icon={BarChart3}
+                            color="purple"
+                        />
+                        <div className="md:col-span-2 lg:col-span-1">
+                            <MetricCard
+                                title="建筑面积"
+                                value={area.toLocaleString()}
+                                unit="m²"
+                                icon={Building2}
+                                color="orange"
+                            />
                         </div>
                     </div>
 
-                    <div className="grid md:grid-cols-2 gap-6">
-                        <div className="bg-white/5 backdrop-blur-md p-8 rounded-3xl border border-white/10 shadow-sm text-white">
-                            <h3 className="font-bold text-lg mb-6 flex items-center gap-2">
-                                <BarChart3 size={20} className="text-yellow-400" /> 用電類別分析
-                            </h3>
-                            <div className="space-y-4">
-                                <ChartBar label="空調系統 (AC)" percent={45} color="bg-blue-500" value="45%" />
-                                <ChartBar label="照明設備 (Lighting)" percent={30} color="bg-yellow-400" value="30%" />
-                                <ChartBar label="插座設備 (Equipment)" percent={20} color="bg-purple-500" value="20%" />
-                                <ChartBar label="其他 (Others)" percent={5} color="bg-slate-500" value="5%" />
-                            </div>
-                        </div>
+                    {/* === 2. 油表 + 等级表格（2列）=== */}
+                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                        <GaugeChart
+                            value={parseFloat(eui)}
+                            max={300}
+                            currentLevel={rating}
+                            title="建筑能效等级"
+                        />
+                        <EfficiencyTable
+                            currentEUI={parseFloat(eui)}
+                            currentLevel={level}
+                            totalArea={area}
+                        />
+                    </div>
 
-                        <div className="bg-green-900/20 backdrop-blur-md p-8 rounded-3xl border border-green-500/20 text-white">
-                            <h3 className="font-bold text-lg text-green-400 mb-4 flex items-center gap-2">
-                                <Info size={20} /> 改善建議
-                            </h3>
-                            <ul className="space-y-4">
-                                <SuggestionItem title="空調主機效能" desc="建議汰換為一級能效變頻磁浮離心機。" />
-                                <SuggestionItem title="照明功率密度" desc="目前 12W/m² 略高，建議更換 LED 平板燈具。" />
-                                <SuggestionItem title="契約容量優化" desc="依據用電曲線，建議調降契約容量以節省基本費。" />
-                            </ul>
-                        </div>
+                    {/* === 3. 比较区间 === */}
+                    <ComparisonRange
+                        buildingType={data.building_type || 'office'}
+                        yourValue={parseFloat(eui)}
+                        percentile={65}
+                    />
+
+                    {/* === 4. 趋势图 + 设备分析（2列）=== */}
+                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                        <ElectricityTrendChart
+                            data={formatElectricityData()}
+                            years={data.electricity_years || [2023, 2024]}
+                        />
+                        <EquipmentAnalysis
+                            equipment={[
+                                {
+                                    name: '中央空调系统 (Chiller)',
+                                    efficiency: 45,
+                                    rating: '一级能效',
+                                    status: '优',
+                                    savingPotential: '低 (已最佳化)',
+                                    color: 'green'
+                                },
+                                {
+                                    name: '办公照明系统',
+                                    efficiency: 18,
+                                    rating: '一级能效',
+                                    status: '优',
+                                    savingPotential: '低',
+                                    color: 'green'
+                                },
+                                {
+                                    name: '电梯直连梯',
+                                    efficiency: 8,
+                                    rating: '三级能效',
+                                    status: '高 (建议改善)',
+                                    savingPotential: '高',
+                                    color: 'orange'
+                                }
+                            ]}
+                        />
+                    </div>
+
+                    {/* === 5. 改善建议（保留原有）=== */}
+                    <div className="bg-green-900/20 backdrop-blur-md p-8 rounded-3xl border border-green-500/20 text-white">
+                        <h3 className="font-bold text-lg text-green-400 mb-4 flex items-center gap-2">
+                            <Info size={20} /> 改善建議
+                        </h3>
+                        <ul className="space-y-4">
+                            <SuggestionItem title="空調主機效能" desc="建議汰換為一級能效變頻磁浮離心機。" />
+                            <SuggestionItem title="照明功率密度" desc="目前 12W/m² 略高，建議更換 LED 平板燈具。" />
+                            <SuggestionItem title="契約容量優化" desc="依據用電曲線，建議調降契約容量以節省基本費。" />
+                        </ul>
                     </div>
                 </>
             )}
