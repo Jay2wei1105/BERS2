@@ -73,16 +73,26 @@ export default function App() {
         setDashboardError(null);
         try {
             const { data, error } = await supabase
-                .from('assessments')
+                .from('building_assessments')
                 .select('*')
-                .eq('email', email)
-                .eq('contact_name', name)
+                .eq('contact_email', email)
+                .eq('contact_person', name)
                 .order('created_at', { ascending: false })
                 .limit(1);
 
             if (error) throw error;
             if (data && data.length > 0) {
-                setDashboardRecord(data[0]);
+                // 轉換為 Dashboard 預期格式
+                const record = data[0];
+                const dashboardData = {
+                    ...record,
+                    total_area: record.floor_area,
+                    totalArea: record.floor_area,
+                    annual_electricity: record.analysis_result?.annual_electricity,
+                    annualElectricity: record.analysis_result?.annual_electricity,
+                    building_name: record.company_name
+                };
+                setDashboardRecord(dashboardData);
                 setIsLoggedIn(true); // 登入成功
                 setIsDemoMode(false); // 退出 Demo 模式
             } else {
