@@ -1450,126 +1450,125 @@ function Dashboard({ data, onRetry, onVerify, onDemo, loading, error, isLoggedIn
                 </div>
 
                 <div className="flex items-center gap-3">
-                    <div className="flex items-center gap-3">
-                        {isDemo ? (
-                            <>
-                                <button
-                                    onClick={() => setShowLoginForm(true)}
-                                    className="flex items-center gap-2 px-4 py-2 bg-blue-600 hover:bg-blue-500 text-white rounded-xl font-bold text-sm transition-colors shadow-lg shadow-blue-500/20"
-                                >
-                                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 0 1-3 3H6a3 3 0 0 1-3-3V7a3 3 0 0 1 3-3h7a3 3 0 0 1 3 3v1" />
-                                    </svg>
-                                    登入查看報告
-                                </button>
-                            </>
-                        ) : (
-                            <>
-                                <button onClick={handleLogout} className="px-4 py-2 border border-red-500/30 text-red-400 rounded-lg font-medium hover:bg-red-500/10 transition-colors">
-                                    登出
-                                </button>
-                                <div className="w-px h-6 bg-white/10 mx-1"></div>
-                                <button onClick={() => setTimeout(() => window.print(), 0)} className="px-4 py-2 bg-white/5 border border-white/10 rounded-lg text-slate-300 font-medium hover:bg-white/10 hover:text-white transition-colors">匯出報表</button>
-                                <button onClick={onRetry} className="px-4 py-2 bg-green-600 text-white rounded-lg font-medium hover:bg-green-500 transition-colors">新增試算</button>
-                            </>
-                        )}
-                    </div>
+                    {isDemo ? (
+                        <>
+                            <button
+                                onClick={() => setShowLoginForm(true)}
+                                className="flex items-center gap-2 px-4 py-2 bg-blue-600 hover:bg-blue-500 text-white rounded-xl font-bold text-sm transition-colors shadow-lg shadow-blue-500/20"
+                            >
+                                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 0 1-3 3H6a3 3 0 0 1-3-3V7a3 3 0 0 1 3-3h7a3 3 0 0 1 3 3v1" />
+                                </svg>
+                                登入查看報告
+                            </button>
+                        </>
+                    ) : (
+                        <>
+                            <button onClick={handleLogout} className="px-4 py-2 border border-red-500/30 text-red-400 rounded-lg font-medium hover:bg-red-500/10 transition-colors">
+                                登出
+                            </button>
+                            <div className="w-px h-6 bg-white/10 mx-1"></div>
+                            <button onClick={() => setTimeout(() => window.print(), 0)} className="px-4 py-2 bg-white/5 border border-white/10 rounded-lg text-slate-300 font-medium hover:bg-white/10 hover:text-white transition-colors">匯出報表</button>
+                            <button onClick={onRetry} className="px-4 py-2 bg-green-600 text-white rounded-lg font-medium hover:bg-green-500 transition-colors">新增試算</button>
+                        </>
+                    )}
                 </div>
-
-                {/* === 1. 关键指标卡片（4列）=== */}
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-                    <MetricCard
-                        title="建築 EUI"
-                        value={eui}
-                        unit="kWh/m².yr"
-                        trend="down"
-                        trendValue="-5.2%"
-                        icon={Zap}
-                        color="blue"
-                    />
-                    <MetricCard
-                        title="排碳量"
-                        value={carbonEmission}
-                        unit="噸CO2/yr"
-                        trend="down"
-                        trendValue="-3.1%"
-                        icon={Leaf}
-                        color="green"
-                    />
-                    <MetricCard
-                        title="總和得分"
-                        value={totalScore}
-                        unit="分"
-                        trend="up"
-                        trendValue="+2.5%"
-                        icon={BarChart3}
-                        color="purple"
-                    />
-                    {/* 能效等级替换建筑面积 */}
-                    <GaugeChart
-                        value={parseFloat(eui)}
-                        max={300}
-                        currentLevel={rating}
-                        compact={true}
-                    />
-                </div>
-
-                {/* === 2. 等级对应表格（全宽，更多建议）=== */}
-                <EfficiencyTable
-                    currentEUI={parseFloat(eui)}
-                    currentLevel={level}
-                    totalArea={area}
-                    fullWidth={true}
-                />
-
-                {/* === 3. 比较区间 === */}
-                <ComparisonRange
-                    buildingType={displayData?.building_type || 'office'}
-                    yourValue={parseFloat(eui)}
-                    percentile={65}
-                />
-
-                {/* === 4. 用电趋势图（全宽，带交互）=== */}
-                <ElectricityTrendChart
-                    data={formatElectricityData()}
-                    years={displayData?.electricity_years || [2023, 2024]}
-                    interactive={true}
-                />
-
-                {/* === 5. 設備分析（全寬）=== */}
-                <EquipmentAnalysis
-                    equipment={[
-                        {
-                            name: '中央空調系統 (Chiller)',
-                            efficiency: 45,
-                            rating: '一級能效',
-                            status: '優',
-                            savingPotential: '低 (已最佳化)',
-                            color: 'green'
-                        },
-                        {
-                            name: '辦公照明系統',
-                            efficiency: 18,
-                            rating: '一級能效',
-                            status: '優',
-                            savingPotential: '低',
-                            color: 'green'
-                        },
-                        {
-                            name: '電梯直連梯',
-                            efficiency: 8,
-                            rating: '三級能效',
-                            status: '高 (建議改善)',
-                            savingPotential: '高',
-                            color: 'orange'
-                        }
-                    ]}
-                />
-
-                {/* === 6. BERSe 評估總表 === */}
-                <BERSeTable data={displayData} />
             </div>
+
+            {/* === 1. 关键指标卡片（4列）=== */}
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                <MetricCard
+                    title="建築 EUI"
+                    value={eui}
+                    unit="kWh/m².yr"
+                    trend="down"
+                    trendValue="-5.2%"
+                    icon={Zap}
+                    color="blue"
+                />
+                <MetricCard
+                    title="排碳量"
+                    value={carbonEmission}
+                    unit="噸CO2/yr"
+                    trend="down"
+                    trendValue="-3.1%"
+                    icon={Leaf}
+                    color="green"
+                />
+                <MetricCard
+                    title="總和得分"
+                    value={totalScore}
+                    unit="分"
+                    trend="up"
+                    trendValue="+2.5%"
+                    icon={BarChart3}
+                    color="purple"
+                />
+                {/* 能效等级替换建筑面积 */}
+                <GaugeChart
+                    value={parseFloat(eui)}
+                    max={300}
+                    currentLevel={rating}
+                    compact={true}
+                />
+            </div>
+
+            {/* === 2. 等级对应表格（全宽，更多建议）=== */}
+            <EfficiencyTable
+                currentEUI={parseFloat(eui)}
+                currentLevel={level}
+                totalArea={area}
+                fullWidth={true}
+            />
+
+            {/* === 3. 比较区间 === */}
+            <ComparisonRange
+                buildingType={displayData?.building_type || 'office'}
+                yourValue={parseFloat(eui)}
+                percentile={65}
+            />
+
+            {/* === 4. 用电趋势图（全宽，带交互）=== */}
+            <ElectricityTrendChart
+                data={formatElectricityData()}
+                years={displayData?.electricity_years || [2023, 2024]}
+                interactive={true}
+            />
+
+            {/* === 5. 設備分析（全寬）=== */}
+            <EquipmentAnalysis
+                equipment={[
+                    {
+                        name: '中央空調系統 (Chiller)',
+                        efficiency: 45,
+                        rating: '一級能效',
+                        status: '優',
+                        savingPotential: '低 (已最佳化)',
+                        color: 'green'
+                    },
+                    {
+                        name: '辦公照明系統',
+                        efficiency: 18,
+                        rating: '一級能效',
+                        status: '優',
+                        savingPotential: '低',
+                        color: 'green'
+                    },
+                    {
+                        name: '電梯直連梯',
+                        efficiency: 8,
+                        rating: '三級能效',
+                        status: '高 (建議改善)',
+                        savingPotential: '高',
+                        color: 'orange'
+                    }
+                ]}
+            />
+
+            {/* === 6. BERSe 評估總表 === */}
+            <BERSeTable data={displayData} />
         </div>
+        </div >
     );
 }
 
