@@ -53,5 +53,83 @@ export const DEMO_DATA = {
         ]
     },
 
-    ac_system: "中央空調系統"
+    ac_system: "中央空調系統",
+
+    // BERSe 評估相關數據
+    water_data: {
+        rainwater: 120,        // 雨中水年利用量 (m³)
+        recycled: 80,          // 中水回收量 (m³)
+        total: 200             // 總節水量 (m³)
+    },
+
+    special_electricity: 5000,   // 其他特殊用電 (kWh/(m².yr))
+    ur_coefficient: 1.0,         // 城鄉係數
+
+    // 免評估分區資料
+    exemption_zones: [
+        {
+            name: '室內停車場',
+            area: 1000,
+            formula: '1000 × 5',
+            elec: 5000
+        },
+        {
+            name: '發電機房',
+            area: 200,
+            formula: '200 × 20',
+            elec: 4000
+        },
+        {
+            name: '消防幫浦室',
+            area: 100,
+            formula: '100 × 15',
+            elec: 1500
+        }
+    ],
+    exemption_total_area: 1300,
+    exemption_total_elec: 10500,
+
+    // 耗能分區資料
+    consumption_zones: [
+        {
+            name: '辦公空間A',
+            area: 2000,
+            aeui: 45,      // 空調耗電密度
+            leui: 30,      // 照明耗電密度
+            eeui: 10,      // 設備耗電密度
+            ur: 1.0,       // 城鄉係數
+            sor: 1.0,      // 空間營運率
+            elec: 170000   // 年耗電量
+        },
+        {
+            name: '辦公空間B',
+            area: 1800,
+            aeui: 45,
+            leui: 30,
+            eeui: 10,
+            ur: 1.0,
+            sor: 1.0,
+            elec: 153000
+        },
+        {
+            name: '會議室',
+            area: 500,
+            aeui: 50,
+            leui: 35,
+            eeui: 15,
+            ur: 1.0,
+            sor: 0.8,
+            elec: 40000
+        },
+        {
+            name: '機房',
+            area: 200,
+            aeui: 60,
+            leui: 20,
+            eeui: 80,
+            ur: 1.0,
+            sor: 1.0,
+            elec: 32000
+        }
+    ]
 };
