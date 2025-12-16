@@ -138,9 +138,9 @@ export function ElectricityTrendChart({ data, years, interactive = false }) {
     // 計算最大值用於縮放
     const maxValue = Math.max(...data.flatMap(d => [d.year2023 || 0, d.year2024 || 0]));
 
-    // SVG 座標系 (保持邏輯座標方便計算)
-    const svgHeight = 100;
-    const svgWidth = 100;
+    // SVG 座標系 (調整為接近容器比例 2.5:1 以減少變形)
+    const svgWidth = 500;
+    const svgHeight = 200;
 
     // 計算點的Y座標 (邏輯座標)
     const calculateY = (value) => {
@@ -169,10 +169,8 @@ export function ElectricityTrendChart({ data, years, interactive = false }) {
 
         setHoveredIndex(index);
 
-        // 更新Tooltip位置 (跟隨滑鼠但限制在容器內)
-        // 為了避免擋住手指或滑鼠，稍微偏移
+        // 更新Tooltip位置
         let tooltipX = x;
-        // 限制左右邊界
         if (x < 70) tooltipX = 70;
         if (x > rect.width - 70) tooltipX = rect.width - 70;
 
@@ -247,7 +245,6 @@ export function ElectricityTrendChart({ data, years, interactive = false }) {
                 )}
 
                 {/* SVG 圖表 */}
-                {/* 使用 preserveAspectRatio="none" 讓圖表填滿容器 */}
                 <svg viewBox={`0 0 ${svgWidth} ${svgHeight}`} preserveAspectRatio="none" className="w-full h-full overflow-visible">
                     <defs>
                         <linearGradient id="chartGradientBlue" x1="0" y1="0" x2="0" y2="1">
@@ -261,26 +258,29 @@ export function ElectricityTrendChart({ data, years, interactive = false }) {
                     </defs>
 
                     {/* 網格線 */}
-                    {[0, 20, 40, 60, 80, 100].map(y => (
-                        <line
-                            key={y}
-                            x1="0"
-                            y1={y}
-                            x2="100"
-                            y2={y}
-                            stroke="rgba(255,255,255,0.05)"
-                            strokeWidth="0.5"
-                            vectorEffect="non-scaling-stroke"
-                        />
-                    ))}
+                    {[0, 20, 40, 60, 80, 100].map(yPercent => {
+                        const y = yPercent * (svgHeight / 100);
+                        return (
+                            <line
+                                key={yPercent}
+                                x1="0"
+                                y1={y}
+                                x2={svgWidth}
+                                y2={y}
+                                stroke="rgba(255,255,255,0.05)"
+                                strokeWidth="1" // 相對坐標系適當調細在視覺上
+                                vectorEffect="non-scaling-stroke"
+                            />
+                        );
+                    })}
 
                     {/* 垂直引導線 (跟隨 Hover 索引) */}
                     {interactive && hoveredIndex !== null && (
                         <line
-                            x1={(hoveredIndex / (data.length - 1)) * 100}
+                            x1={(hoveredIndex / (data.length - 1)) * svgWidth}
                             y1="0"
-                            x2={(hoveredIndex / (data.length - 1)) * 100}
-                            y2="100"
+                            x2={(hoveredIndex / (data.length - 1)) * svgWidth}
+                            y2={svgHeight}
                             stroke="white"
                             strokeWidth="1"
                             strokeDasharray="4 4"
@@ -302,9 +302,8 @@ export function ElectricityTrendChart({ data, years, interactive = false }) {
                         className="transition-all duration-300"
                         opacity={hoveredIndex !== null ? 0.4 : 1}
                     />
-                    {/* 藍色填充區 */}
                     <path
-                        d={`${generatePath('year2023')} L 100 100 L 0 100 Z`}
+                        d={`${generatePath('year2023')} L ${svgWidth} ${svgHeight} L 0 ${svgHeight} Z`}
                         fill="url(#chartGradientBlue)"
                         opacity="0.5"
                         className="pointer-events-none"
@@ -323,9 +322,8 @@ export function ElectricityTrendChart({ data, years, interactive = false }) {
                         filter="drop-shadow(0 0 4px rgba(16, 185, 129, 0.5))"
                         className="transition-all duration-300"
                     />
-                    {/* 綠色填充區 */}
                     <path
-                        d={`${generatePath('year2024')} L 100 100 L 0 100 Z`}
+                        d={`${generatePath('year2024')} L ${svgWidth} ${svgHeight} L 0 ${svgHeight} Z`}
                         fill="url(#chartGradientGreen)"
                         opacity="0.5"
                         className="pointer-events-none"
@@ -334,14 +332,14 @@ export function ElectricityTrendChart({ data, years, interactive = false }) {
                     {/* 數據點 (僅Hover時顯示當前點) */}
                     {interactive && hoveredIndex !== null && (() => {
                         const d = data[hoveredIndex];
-                        const x = (hoveredIndex / (data.length - 1)) * 100;
+                        const x = (hoveredIndex / (data.length - 1)) * svgWidth;
                         return (
                             <g>
                                 {/* 2023點 */}
                                 <circle
                                     cx={x}
                                     cy={calculateY(d.year2023)}
-                                    r="4"
+                                    r="3" // 半徑調小
                                     fill="#1e293b"
                                     stroke="#3b82f6"
                                     strokeWidth="2"
@@ -352,7 +350,7 @@ export function ElectricityTrendChart({ data, years, interactive = false }) {
                                 <circle
                                     cx={x}
                                     cy={calculateY(d.year2024)}
-                                    r="4"
+                                    r="3"
                                     fill="#1e293b"
                                     stroke="#10b981"
                                     strokeWidth="2"
