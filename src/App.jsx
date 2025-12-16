@@ -69,6 +69,98 @@ export default function App() {
                     building_name: record.company_name,
                     ...record.analysis_result // 展開分析結果到上層，供 BERSeTable 使用
                 };
+
+                // --- 補回舊資料缺失的計算欄位 (若 analysis_result 中沒有詳細分區資訊) ---
+                if (!dashboardData.consumption_zones || dashboardData.consumption_zones.length === 0) {
+                    console.log("偵測到舊資料，執行即時補算...");
+
+                    const spaces = record.spaces || [];
+                    const finalTotalArea = record.floor_area || 0;
+                    const latestElectricityTotal = record.analysis_result?.annual_electricity || 0;
+
+                    // 1. 補算分區
+                    const mappedZones = spaces.map((space) => {
+                        let zoneCode = 'B3';
+                        const type = space.type || '';
+                        if (type === 'meeting' || type === 'lounge' || type === 'corridor') zoneCode = 'B4';
+                        if (type === 'lobby') zoneCode = 'B2';
+                        if (type === 'server') zoneCode = 'N8';
+                        if (type === 'parking') zoneCode = 'N3';
+                        if (type === 'kitchen') zoneCode = 'N1';
+
+                        const isExempt = zoneCode.startsWith('N');
+                        if (isExempt) {
+                            return {
+                                type: 'exempt',
+                                code: zoneCode,
+                                name: space.name,
+                                area: parseFloat(space.area) || 0
+                            };
+                        } else {
+                            const params = lookupZoneParameter(zoneCode, 'm');
+                            const aeui = params?.airConditioningAEUI || 40;
+                            const leui = params?.lightingLEUI || 20;
+                            const eeui = params?.electricalEEUI || 10;
+                            const area = parseFloat(space.area) || 0;
+                            return {
+                                type: 'consumption',
+                                name: space.name,
+                                zoneCode: zoneCode,
+                                area: area,
+                                aeui: aeui,
+                                leui: leui,
+                                eeui: eeui,
+                                ur: 1.0,
+                                sor: 1.0,
+                                elec: (aeui + leui + eeui) * area,
+                                category: params?.category || '辦公場所'
+                            };
+                        }
+                    });
+
+                    const consumption_zones = mappedZones.filter(z => z.type === 'consumption');
+                    const exemption_zones = mappedZones.filter(z => z.type === 'exempt').map(z => ({
+                        name: z.name,
+                        area: z.area,
+                        formula: `查表數值 x ${z.area}`,
+                        elec: 0
+                    }));
+
+                    const consumption_footer = {
+                        assessedArea: consumption_zones.reduce((sum, z) => sum + z.area, 0),
+                        totalZoneElec: consumption_zones.reduce((sum, z) => sum + z.elec, 0).toFixed(0),
+                        te: latestElectricityTotal,
+                        et: latestElectricityTotal,
+                        ep: 0,
+                        eh: 0,
+                        ee: 0,
+                        teui: finalTotalArea > 0 ? (latestElectricityTotal / finalTotalArea).toFixed(1) : 0,
+                        majorEui: finalTotalArea > 0 ? (latestElectricityTotal / finalTotalArea).toFixed(1) : 0
+                    };
+
+                    // 2. 補算指標
+                    const euiValue = finalTotalArea > 0 ? latestElectricityTotal / finalTotalArea : 0;
+                    const energy_indicators = {
+                        euiMin: 80,
+                        euiGb: 140,
+                        euiM: 160,
+                        euiMax: 250,
+                        deltaEui: (euiValue - 180).toFixed(1),
+                        euiStar: euiValue.toFixed(1),
+                        ceiStar: (euiValue * 0.502).toFixed(2),
+                        scoreE: Math.max(0, Math.min(100, 100 - (euiValue - 100))).toFixed(1),
+                        level: euiValue < 100 ? '1+ 級 (鑽石級)' :
+                            euiValue < 140 ? '1 級 (黃金級)' :
+                                euiValue < 180 ? '2 級 (銀級)' :
+                                    euiValue < 220 ? '3 級 (合格)' : '待改善'
+                    };
+
+                    // 合併回 dashboardData
+                    dashboardData.consumption_zones = consumption_zones;
+                    dashboardData.exemption_zones = exemption_zones;
+                    dashboardData.energy_indicators = energy_indicators;
+                    dashboardData.consumption_footer = consumption_footer;
+                }
                 setDashboardRecord(dashboardData);
                 setIsLoggedIn(true); // 登入成功
                 setIsDemoMode(false); // 退出 Demo 模式
