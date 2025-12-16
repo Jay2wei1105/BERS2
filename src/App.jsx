@@ -23,7 +23,12 @@ import {
     Calculator,
     Loader2,
     Menu,
-    X
+    X,
+    Info,
+    Activity,
+    Droplets,
+    Home,
+    Hotel
 } from 'lucide-react';
 import { supabase } from './lib/supabaseClient';
 import { MetricCard, GaugeChart, EfficiencyTable } from './components/DashboardComponents';
