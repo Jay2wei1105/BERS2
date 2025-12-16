@@ -1454,7 +1454,7 @@ function Dashboard({ data, onRetry, onVerify, onDemo, loading, error, isLoggedIn
             {/* === 1. 关键指标卡片（4列）=== */}
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
                 <MetricCard
-                    title="建筑 EUI"
+                    title="建築 EUI"
                     value={eui}
                     unit="kWh/m².yr"
                     trend="down"
@@ -1465,14 +1465,14 @@ function Dashboard({ data, onRetry, onVerify, onDemo, loading, error, isLoggedIn
                 <MetricCard
                     title="排碳量"
                     value={carbonEmission}
-                    unit="吨CO2/yr"
+                    unit="噸CO2/yr"
                     trend="down"
                     trendValue="-3.1%"
                     icon={Leaf}
                     color="green"
                 />
                 <MetricCard
-                    title="总和得分"
+                    title="總和得分"
                     value={totalScore}
                     unit="分"
                     trend="up"
@@ -1480,31 +1480,22 @@ function Dashboard({ data, onRetry, onVerify, onDemo, loading, error, isLoggedIn
                     icon={BarChart3}
                     color="purple"
                 />
-                <div className="md:col-span-2 lg:col-span-1">
-                    <MetricCard
-                        title="建筑面积"
-                        value={area.toLocaleString()}
-                        unit="m²"
-                        icon={Building2}
-                        color="orange"
-                    />
-                </div>
-            </div>
-
-            {/* === 2. 油表 + 等级表格（2列）=== */}
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                {/* 能效等级替换建筑面积 */}
                 <GaugeChart
                     value={parseFloat(eui)}
                     max={300}
                     currentLevel={rating}
-                    title="建筑能效等级"
-                />
-                <EfficiencyTable
-                    currentEUI={parseFloat(eui)}
-                    currentLevel={level}
-                    totalArea={area}
+                    compact={true}
                 />
             </div>
+
+            {/* === 2. 等级对应表格（全宽，更多建议）=== */}
+            <EfficiencyTable
+                currentEUI={parseFloat(eui)}
+                currentLevel={level}
+                totalArea={area}
+                fullWidth={true}
+            />
 
             {/* === 3. 比较区间 === */}
             <ComparisonRange
@@ -1513,53 +1504,42 @@ function Dashboard({ data, onRetry, onVerify, onDemo, loading, error, isLoggedIn
                 percentile={65}
             />
 
-            {/* === 4. 趋势图 + 设备分析（2列）=== */}
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                <ElectricityTrendChart
-                    data={formatElectricityData()}
-                    years={displayData?.electricity_years || [2023, 2024]}
-                />
-                <EquipmentAnalysis
-                    equipment={[
-                        {
-                            name: '中央空调系统 (Chiller)',
-                            efficiency: 45,
-                            rating: '一级能效',
-                            status: '优',
-                            savingPotential: '低 (已最佳化)',
-                            color: 'green'
-                        },
-                        {
-                            name: '办公照明系统',
-                            efficiency: 18,
-                            rating: '一级能效',
-                            status: '优',
-                            savingPotential: '低',
-                            color: 'green'
-                        },
-                        {
-                            name: '电梯直连梯',
-                            efficiency: 8,
-                            rating: '三级能效',
-                            status: '高 (建议改善)',
-                            savingPotential: '高',
-                            color: 'orange'
-                        }
-                    ]}
-                />
-            </div>
+            {/* === 4. 用电趋势图（全宽，带交互）=== */}
+            <ElectricityTrendChart
+                data={formatElectricityData()}
+                years={displayData?.electricity_years || [2023, 2024]}
+                interactive={true}
+            />
 
-            {/* === 5. 改善建议（保留原有）=== */}
-            <div className="bg-green-900/20 backdrop-blur-md p-8 rounded-3xl border border-green-500/20 text-white">
-                <h3 className="font-bold text-lg text-green-400 mb-4 flex items-center gap-2">
-                    <Info size={20} /> 改善建議
-                </h3>
-                <ul className="space-y-4">
-                    <SuggestionItem title="空調主機效能" desc="建議汰換為一級能效變頻磁浮離心機。" />
-                    <SuggestionItem title="照明功率密度" desc="目前 12W/m² 略高，建議更換 LED 平板燈具。" />
-                    <SuggestionItem title="契約容量優化" desc="依據用電曲線，建議調降契約容量以節省基本費。" />
-                </ul>
-            </div>
+            {/* === 5. 设备分析（全宽）=== */}
+            <EquipmentAnalysis
+                equipment={[
+                    {
+                        name: '中央空調系統 (Chiller)',
+                        efficiency: 45,
+                        rating: '一級能效',
+                        status: '優',
+                        savingPotential: '低 (已最佳化)',
+                        color: 'green'
+                    },
+                    {
+                        name: '辦公照明系統',
+                        efficiency: 18,
+                        rating: '一級能效',
+                        status: '優',
+                        savingPotential: '低',
+                        color: 'green'
+                    },
+                    {
+                        name: '電梯直連梯',
+                        efficiency: 8,
+                        rating: '三級能效',
+                        status: '高 (建議改善)',
+                        savingPotential: '高',
+                        color: 'orange'
+                    }
+                ]}
+            />
 
             {/* === 6. BERSe 评估总表 === */}
             <BERSeTable data={displayData} />
