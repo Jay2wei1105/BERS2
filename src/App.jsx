@@ -1368,30 +1368,7 @@ function Dashboard({ data, onRetry, onVerify, onDemo, loading, error, isLoggedIn
     return (
         <div className="animate-in fade-in zoom-in duration-500 space-y-8">
             {/* 頂部：Demo模式提示或登入按鈕 */}
-            {isDemo && (
-                <div className="bg-gradient-to-r from-blue-600/20 to-purple-600/20 backdrop-blur-md border border-blue-500/30 rounded-3xl p-6">
-                    <div className="flex flex-col md:flex-row items-center justify-between gap-4">
-                        <div className="text-white">
-                            <h3 className="text-xl font-bold mb-1 flex items-center gap-2">
-                                <span className="text-2xl">📊</span>
-                                Demo 範例數據展示
-                            </h3>
-                            <p className="text-sm text-slate-300">
-                                這是範例數據，僅供預覽 Dashboard 效果。登入後可查看您的真實評估報告。
-                            </p>
-                        </div>
-                        <button
-                            onClick={() => setShowLoginForm(true)}
-                            className="px-6 py-3 bg-blue-600 hover:bg-blue-500 text-white rounded-xl font-bold transition-colors flex items-center gap-2 whitespace-nowrap"
-                        >
-                            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 0 1-3 3H6a3 3 0 0 1-3-3V7a3 3 0 0 1 3-3h7a3 3 0 0 1 3 3v1" />
-                            </svg>
-                            登入查看我的報告
-                        </button>
-                    </div>
-                </div>
-            )}
+            {/* 頂部 Demo Banner 已整合至下方標題列 */}
 
             {/* 登入表單（彈出式） */}
             {showLoginForm && (
@@ -1435,17 +1412,45 @@ function Dashboard({ data, onRetry, onVerify, onDemo, loading, error, isLoggedIn
             )}
 
             {/* 报告标题（不显示用户和建筑信息如果是Demo） */}
-            <div className="flex flex-col md:flex-row justify-between items-end mb-8 gap-4 text-white">
-                <div>
-                    <h2 className="text-3xl font-bold mb-1">評估結果報告</h2>
-                    {!isDemo && (
-                        <div className="flex items-center gap-2 text-slate-400">
-                            <span className="bg-white/10 px-2 py-0.5 rounded text-xs border border-white/10">專案</span>
-                            <span>{displayData?.building_name || displayData?.basic_info?.companyName || '未命名建築'}</span>
+            {/* 报告标题与操作栏 (整合 Demo 提示) */}
+            <div className={`flex flex-col md:flex-row justify-between items-center mb-8 gap-4 text-white ${isDemo ? 'p-4 bg-gradient-to-r from-blue-900/20 to-purple-900/20 border border-blue-500/20 rounded-2xl' : ''}`}>
+                <div className="flex items-center gap-4">
+                    <div>
+                        <div className="flex items-center gap-3">
+                            <h2 className="text-3xl font-bold">評估結果報告</h2>
+                            {isDemo && (
+                                <div className="flex items-center gap-2 px-3 py-1 bg-blue-500/20 border border-blue-500/30 rounded-full text-blue-300">
+                                    <span className="text-sm">📊 範例數據展示</span>
+                                </div>
+                            )}
                         </div>
-                    )}
+                        {!isDemo && (
+                            <div className="flex items-center gap-2 text-slate-400 mt-1">
+                                <span className="bg-white/10 px-2 py-0.5 rounded text-xs border border-white/10">專案</span>
+                                <span>{displayData?.building_name || displayData?.basic_info?.companyName || '未命名建築'}</span>
+                            </div>
+                        )}
+                        {isDemo && (
+                            <p className="text-xs text-slate-400 mt-1 ml-1">僅供預覽，登入以查看真實報告</p>
+                        )}
+                    </div>
                 </div>
-                <div className="flex gap-2">
+
+                <div className="flex items-center gap-3">
+                    {isDemo && (
+                        <>
+                            <button
+                                onClick={() => setShowLoginForm(true)}
+                                className="flex items-center gap-2 px-4 py-2 bg-blue-600 hover:bg-blue-500 text-white rounded-xl font-bold text-sm transition-colors shadow-lg shadow-blue-500/20"
+                            >
+                                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 0 1-3 3H6a3 3 0 0 1-3-3V7a3 3 0 0 1 3-3h7a3 3 0 0 1 3 3v1" />
+                                </svg>
+                                登入查看報告
+                            </button>
+                            <div className="w-px h-8 bg-white/10 mx-2"></div>
+                        </>
+                    )}
                     <button onClick={() => window.print()} className="px-4 py-2 bg-white/5 border border-white/10 rounded-lg text-slate-300 font-medium hover:bg-white/10 hover:text-white transition-colors">匯出報表</button>
                     <button onClick={onRetry} className="px-4 py-2 bg-green-600 text-white rounded-lg font-medium hover:bg-green-500 transition-colors">新增試算</button>
                 </div>
