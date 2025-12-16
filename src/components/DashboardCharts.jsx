@@ -90,6 +90,25 @@ export function ComparisonRange({ buildingType, yourValue, percentile }) {
 
             {/* 進度條區域 */}
             <div className="relative mb-6">
+                {/* 當前位置指示器 - 改為下箭頭 */}
+                <div
+                    className="absolute -top-16 transition-all duration-1000 ease-out z-20"
+                    style={{ left: `${position}%`, transform: 'translateX(-50%)' }}
+                >
+                    {/* 數值標籤 */}
+                    <div className={`mb-2 px-4 py-2 rounded-lg ${categoryBg} backdrop-blur-sm border-2 border-white shadow-xl whitespace-nowrap`}>
+                        <span className="text-lg font-bold text-white">{yourValue}</span>
+                    </div>
+
+                    {/* 下箭頭 */}
+                    <div className="flex justify-center">
+                        <div
+                            className={`w-0 h-0 border-l-[12px] border-l-transparent border-r-[12px] border-r-transparent border-t-[16px] ${categoryBg.replace('bg-', 'border-t-')} drop-shadow-lg`}
+                            style={{ filter: 'drop-shadow(0 4px 6px rgba(0,0,0,0.3))' }}
+                        ></div>
+                    </div>
+                </div>
+
                 {/* 7級平滑漸變條 */}
                 <div className="relative h-12 rounded-full overflow-hidden shadow-inner">
                     <div
@@ -100,29 +119,6 @@ export function ComparisonRange({ buildingType, yourValue, percentile }) {
                     ></div>
                     {/* 半透明覆蓋層增加深度 */}
                     <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent rounded-full"></div>
-                </div>
-
-                {/* 當前位置指示器 */}
-                <div
-                    className="absolute top-1/2 -translate-y-1/2 transition-all duration-1000 ease-out"
-                    style={{ left: `${position}%`, transform: 'translateX(-50%) translateY(-50%)' }}
-                >
-                    {/* 發光環 */}
-                    <div
-                        className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-10 h-10 rounded-full animate-pulse"
-                        style={{ background: categoryGlow, filter: 'blur(8px)' }}
-                    ></div>
-
-                    {/* 指示圓點 */}
-                    <div className={`relative w-6 h-6 ${categoryBg} rounded-full border-4 border-white shadow-2xl z-10`}>
-                        {/* 內部光點 */}
-                        <div className="absolute inset-1 bg-white/50 rounded-full"></div>
-                    </div>
-
-                    {/* 數值標籤 */}
-                    <div className={`absolute -top-12 left-1/2 -translate-x-1/2 px-4 py-1.5 rounded-full ${categoryBg}/90 backdrop-blur-sm border border-white/20 shadow-lg whitespace-nowrap`}>
-                        <span className="text-sm font-bold text-white">{yourValue}</span>
-                    </div>
                 </div>
             </div>
 
