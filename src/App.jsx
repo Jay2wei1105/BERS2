@@ -1462,7 +1462,7 @@ function Dashboard({ data, onRetry, onVerify, onDemo, loading, error, isLoggedIn
                                     登出
                                 </button>
                                 <div className="w-px h-6 bg-white/10 mx-1"></div>
-                                <button onClick={() => window.print()} className="px-4 py-2 bg-white/5 border border-white/10 rounded-lg text-slate-300 font-medium hover:bg-white/10 hover:text-white transition-colors">匯出報表</button>
+                                <button onClick={() => setTimeout(() => window.print(), 0)} className="px-4 py-2 bg-white/5 border border-white/10 rounded-lg text-slate-300 font-medium hover:bg-white/10 hover:text-white transition-colors">匯出報表</button>
                                 <button onClick={onRetry} className="px-4 py-2 bg-green-600 text-white rounded-lg font-medium hover:bg-green-500 transition-colors">新增試算</button>
                             </>
                         )}
