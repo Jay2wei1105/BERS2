@@ -730,9 +730,11 @@ function AnalysisForm({ onComplete }) {
 
                 // 分析結果
                 analysis_result: {
+                    total_area: finalTotalArea,
                     annual_electricity: latestElectricityTotal,
-                    calculated_eui: finalTotalArea ? (latestElectricityTotal / finalTotalArea).toFixed(2) : '0',
-                    total_area: finalTotalArea
+                    eui: latestElectricityTotal / finalTotalArea,
+                    carbonEmission: (latestElectricityTotal * 0.502 / 1000),
+                    calculated_at: new Date().toISOString()
                 },
 
                 status: 'draft'
@@ -748,8 +750,17 @@ function AnalysisForm({ onComplete }) {
                 throw error;
             }
 
+            // 轉換為 Dashboard 預期格式
+            const dashboardData = {
+                ...data,
+                total_area: data.floor_area,
+                totalArea: data.floor_area,
+                annual_electricity: data.analysis_result?.annual_electricity,
+                annualElectricity: data.analysis_result?.annual_electricity
+            };
+
             alert('✅ 資料已成功儲存！');
-            onComplete?.(data);
+            onComplete?.(dashboardData);
         } catch (error) {
             console.error("Supabase Save Error:", error);
             alert(`❌ 儲存失敗：${error.message || '請稍後再試'}`);

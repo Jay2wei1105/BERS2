@@ -424,7 +424,150 @@ export function ElectricityTrendChart({ data, years, interactive = false }) {
 }
 
 // ============================================
-// 6. EquipmentAnalysis - 設備能耗效率分析
+// 6. EquipmentAnalysis - 設備能耗效率分析（僅空調與照明）
+// ============================================
+
+export function EquipmentAnalysis({ equipment }) {
+    if (!equipment) return null;
+
+    // 準備設備列表（只包含空調和照明）
+    const equipmentList = [];
+
+    // 處理空調設備
+    if (equipment.ac && Array.isArray(equipment.ac)) {
+        equipment.ac.forEach((item, index) => {
+            if (item.type) {
+                equipmentList.push({
+                    id: `ac-${index}`,
+                    category: '空調',
+                    name: `${item.type || '中央空調'}`,
+                    specs: `${item.tonnage || 'N/A'} RT`,
+                    efficiency: item.quantity > 0 ? 45 : 0, // 簡化效率評估
+                    potential: '低',
+                    suggestion: '建議定期保養清潔',
+                    icon: '🌡️'
+                });
+            }
+        });
+    }
+
+    // 處理照明設備
+    if (equipment.lighting && Array.isArray(equipment.lighting)) {
+        equipment.lighting.forEach((item, index) => {
+            if (item.type) {
+                const isLED = item.type.includes('LED');
+                equipmentList.push({
+                    id: `lighting-${index}`,
+                    category: '照明',
+                    name: item.type || '照明設備',
+                    specs: `${item.quantity || 0} 具`,
+                    efficiency: isLED ? 85 : 45,
+                    potential: isLED ? '低' : '高',
+                    suggestion: isLED ? '已使用LED，表現良好' : '建議更換為LED照明',
+                    icon: '💡'
+                });
+            }
+        });
+    }
+
+    // 如果沒有設備資料，顯示提示
+    if (equipmentList.length === 0) {
+        return (
+            <div className="bg-white/5 backdrop-blur-md border border-white/10 rounded-3xl p-6">
+                <h3 className="text-lg font-bold text-white mb-2">重點設備效率檢視</h3>
+                <p className="text-slate-400 text-sm">暫無設備資料</p>
+            </div>
+        );
+    }
+
+    // 效率顏色映射
+    const getEfficiencyColor = (efficiency) => {
+        if (efficiency >= 70) return { bg: 'bg-green-500', text: 'text-green-400', badge: 'bg-green-500/20 border-green-500/50' };
+        if (efficiency >= 40) return { bg: 'bg-yellow-500', text: 'text-yellow-400', badge: 'bg-yellow-500/20 border-yellow-500/50' };
+        return { bg: 'bg-red-500', text: 'text-red-400', badge: 'bg-red-500/20 border-red-500/50' };
+    };
+
+    // 改善潛力顏色
+    const getPotentialColor = (potential) => {
+        if (potential === '高') return 'text-yellow-400';
+        if (potential === '中') return 'text-orange-400';
+        return 'text-green-400';
+    };
+
+    return (
+        <div className="bg-gradient-to-br from-white/10 to-white/5 backdrop-blur-xl border border-white/10 rounded-3xl p-6 hover-lift">
+            <h3 className="text-lg font-bold text-white mb-2 flex items-center gap-2">
+                <span className="w-1 h-6 bg-gradient-to-b from-purple-500 to-purple-600 rounded-full shadow-lg"></span>
+                重點設備效率檢視
+            </h3>
+            <p className="text-sm text-slate-400 mb-6">監測主要能源設備的運作效率與改善建議</p>
+
+            <div className="space-y-4">
+                {equipmentList.map((item) => {
+                    const colors = getEfficiencyColor(item.efficiency);
+
+                    return (
+                        <div
+                            key={item.id}
+                            className="bg-white/5 border border-white/10 rounded-2xl p-5 hover:bg-white/10 transition-all group"
+                        >
+                            {/* 標題列 */}
+                            <div className="flex items-start justify-between mb-4">
+                                <div className="flex items-center gap-3">
+                                    <div className="text-3xl">{item.icon}</div>
+                                    <div>
+                                        <div className="flex items-center gap-2">
+                                            <h4 className="text-white font-bold">{item.name}</h4>
+                                            <span className={`inline-flex items-center px-2 py-0.5 rounded-full border ${colors.badge} text-xs font-medium ${colors.text}`}>
+                                                {item.category}
+                                            </span>
+                                        </div>
+                                        <p className="text-slate-400 text-sm mt-1">{item.specs}</p>
+                                    </div>
+                                </div>
+                            </div>
+
+                            {/* 能效等級條 */}
+                            <div className="mb-3">
+                                <div className="flex justify-between text-xs text-slate-400 mb-1.5">
+                                    <span>能效等級</span>
+                                    <span className={`font-bold ${colors.text}`}>{item.efficiency}%</span>
+                                </div>
+                                <div className="h-2 bg-white/10 rounded-full overflow-hidden">
+                                    <div
+                                        className={`h-full ${colors.bg} transition-all duration-1000 ease-out rounded-full`}
+                                        style={{ width: `${item.efficiency}%` }}
+                                    />
+                                </div>
+                            </div>
+
+                            {/* 改善潛力與建議 */}
+                            <div className="grid grid-cols-2 gap-3 text-xs">
+                                <div className="bg-white/5 rounded-lg p-2">
+                                    <span className="text-slate-500">節能潛力</span>
+                                    <p className={`font-bold mt-0.5 ${getPotentialColor(item.potential)}`}>
+                                        {item.potential}
+                                    </p>
+                                </div>
+                                <div className="bg-white/5 rounded-lg p-2">
+                                    <span className="text-slate-500">改善建議</span>
+                                    <p className="text-slate-300 mt-0.5 font-medium text-xs">
+                                        {item.suggestion}
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                    );
+                })}
+            </div>
+
+            {/* 下載詳細報告按鈕 */}
+            <button className="w-full mt-6 py-3 bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-500 hover:to-blue-500 text-white font-medium rounded-xl transition-all shadow-lg hover:shadow-purple-500/30">
+                下載詳細報告
+            </button>
+        </div>
+    );
+}
 // ============================================
 
 export function EquipmentAnalysis({ equipment }) {
