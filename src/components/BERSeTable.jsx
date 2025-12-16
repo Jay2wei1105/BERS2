@@ -40,8 +40,13 @@ export function BERSeTable({ data }) {
                     { label: '建築物名稱', value: data?.building_name || '未命名' },
                     { label: '建築物地址', value: data?.basic_info?.address || '-' },
                     { label: '總樓地板面積', value: `${data?.total_area?.toLocaleString() || 0} m²` },
-                    { label: '地上總樓層數', value: data?.basic_info?.floorsAbove || '-' },
-                    { label: '地下總樓層數', value: data?.basic_info?.floorsBelow || '-' },
+                    { label: '評估樓地板面積 Afe', value: `${data?.total_area?.toLocaleString() || 0} m²` }, // 暫時假設等於總面積
+                    { label: '地上總樓層數', value: `${data?.basic_info?.floorsAbove || '-'} 層` },
+                    { label: '地下總樓層數', value: `${data?.basic_info?.floorsBelow || '-'} 層` },
+                    { label: '實際年總耗電量 (EUI)', value: `${data?.calculated_eui || 0} kWh/(m².yr)` }, // 依截圖單位，此處指 EUI
+                    { label: '雨中水年利用量', value: `${data?.water_data?.rainwater || 0} m³` },
+                    { label: '其他特殊用電 Ee', value: `${data?.special_electricity || 0} kWh/(m².yr)` },
+                    { label: '城鄉係數 UR', value: `${data?.ur_coefficient || 1.0}` },
                     { label: '建築分類', value: getBuildingTypeName(data?.building_type) },
                     { label: '空調系統類型', value: data?.ac_system || '中央空調' },
                     { label: '評估日期', value: formatDate(data?.created_at) }
