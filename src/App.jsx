@@ -704,36 +704,42 @@ function AnalysisForm({ onComplete }) {
 
         try {
             const insertPayload = {
-                email: basicInfo.contactEmail || null,
-                contact_name: basicInfo.contactPerson || basicInfo.companyName || null,
-                basic_info: basicInfo,
+                // 基本資料
+                company_name: basicInfo.companyName || null,
+                address: basicInfo.address || null,
+                contact_person: basicInfo.contactPerson || null,
+                contact_email: basicInfo.contactEmail || null,
+                phone: basicInfo.phone || null,
+                floor_area: finalTotalArea,
+                building_type: basicInfo.buildingType,
+                floors_above: basicInfo.floorsAbove ? parseInt(basicInfo.floorsAbove) : null,
+                floors_below: basicInfo.floorsBelow ? parseInt(basicInfo.floorsBelow) : null,
+
+                // 複雜資料（JSONB）
                 schedule_range: scheduleRange,
                 electricity_years: electricityYears,
                 electricity_data: electricityData,
-                spaces,
-                equipment,
-                total_area: finalTotalArea,
-                annual_electricity: latestElectricityTotal,
-                building_name: basicInfo.companyName || '未命名建築',
-                building_type: basicInfo.buildingType,
-                ac_system: equipment.ac[0]?.type || '中央空調',
-                calculated_eui: finalTotalArea ? (latestElectricityTotal / finalTotalArea).toFixed(2) : '0',
-
-                // 【新增】用水資料
+                spaces: spaces,
+                equipment: equipment,
                 water_data: waterData,
-
-                // 【新增】營運率資料
                 operation_rates: operationRates,
 
-                // 【新增】旅館資料（如適用）
+                // 條件性資料
                 hotel_data: (basicInfo.buildingType === 'hotel' || basicInfo.buildingType === 'accommodation') ? hotelData : null,
-
-                // 【新增】醫院資料（如適用）
                 hospital_data: basicInfo.buildingType === 'medical' ? hospitalData : null,
+
+                // 分析結果
+                analysis_result: {
+                    annual_electricity: latestElectricityTotal,
+                    calculated_eui: finalTotalArea ? (latestElectricityTotal / finalTotalArea).toFixed(2) : '0',
+                    total_area: finalTotalArea
+                },
+
+                status: 'draft'
             };
 
             const { data, error } = await supabase
-                .from('assessments')
+                .from('building_assessments')
                 .insert([insertPayload])
                 .select()
                 .single();
@@ -742,10 +748,11 @@ function AnalysisForm({ onComplete }) {
                 throw error;
             }
 
+            alert('✅ 資料已成功儲存！');
             onComplete?.(data);
         } catch (error) {
             console.error("Supabase Save Error:", error);
-            alert('儲存失敗，請稍後再試');
+            alert(`❌ 儲存失敗：${error.message || '請稍後再試'}`);
         } finally {
             setIsSubmitting(false);
         }
