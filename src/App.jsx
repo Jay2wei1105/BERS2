@@ -21,7 +21,9 @@ import {
     ClipboardCheck,
     Scale,
     Calculator,
-    Loader2
+    Loader2,
+    Menu,
+    X
 } from 'lucide-react';
 import { supabase } from './lib/supabaseClient';
 import { MetricCard, GaugeChart, EfficiencyTable } from './components/DashboardComponents';
