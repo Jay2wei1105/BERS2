@@ -132,11 +132,19 @@ export function BERSeTable({ data }) {
 
                     {expandedSections.basicInfo && (
                         <div className="p-6 overflow-x-auto">
-                            <table className="w-full text-sm border-collapse border border-white/20">
+                            <table className="w-full text-sm border-collapse border border-white/20 table-fixed">
+                                <colgroup>
+                                    <col className="w-[20%]" />
+                                    <col className="w-[20%]" />
+                                    <col className="w-[10%]" />
+                                    <col className="w-[20%]" />
+                                    <col className="w-[20%]" />
+                                    <col className="w-[10%]" />
+                                </colgroup>
                                 <tbody className="text-slate-200">
                                     {/* 建築物名稱 */}
                                     <tr>
-                                        <td className="border border-white/20 p-3 bg-white/5 font-bold w-48">建築物名稱</td>
+                                        <td className="border border-white/20 p-3 bg-white/5 font-bold">建築物名稱</td>
                                         <td className="border border-white/20 p-3" colSpan="5">{data?.building_name || '未命名'}</td>
                                     </tr>
                                     {/* 建築物地址 */}
@@ -148,37 +156,37 @@ export function BERSeTable({ data }) {
                                     <tr>
                                         <td className="border border-white/20 p-3 bg-white/5 font-bold">總樓地板面積</td>
                                         <td className="border border-white/20 p-3 text-right">{data?.total_area?.toLocaleString() || '-'}</td>
-                                        <td className="border border-white/20 p-3 text-center w-16 text-slate-400">(m²)</td>
+                                        <td className="border border-white/20 p-3 text-center text-slate-400 font-light">(m²)</td>
                                         <td className="border border-white/20 p-3 bg-white/5 font-bold">評估樓地板面積 Afe</td>
                                         <td className="border border-white/20 p-3 text-right text-blue-300 font-medium">{data?.total_area?.toLocaleString() || '-'}</td>
-                                        <td className="border border-white/20 p-3 text-center w-16 text-slate-400">(m²)</td>
+                                        <td className="border border-white/20 p-3 text-center text-slate-400 font-light">(m²)</td>
                                     </tr>
                                     {/* 地上樓層 | 地下樓層 */}
                                     <tr>
                                         <td className="border border-white/20 p-3 bg-white/5 font-bold">地上總樓層數</td>
                                         <td className="border border-white/20 p-3 text-right">{data?.basic_info?.floorsAbove || '-'}</td>
-                                        <td className="border border-white/20 p-3 text-center text-slate-400">層</td>
+                                        <td className="border border-white/20 p-3 text-center text-slate-400 font-light">層</td>
                                         <td className="border border-white/20 p-3 bg-white/5 font-bold">地下總樓層數</td>
                                         <td className="border border-white/20 p-3 text-right">{data?.basic_info?.floorsBelow || '-'}</td>
-                                        <td className="border border-white/20 p-3 text-center text-slate-400">層</td>
+                                        <td className="border border-white/20 p-3 text-center text-slate-400 font-light">層</td>
                                     </tr>
                                     {/* 實際耗電量 | 雨中水 */}
                                     <tr>
                                         <td className="border border-white/20 p-3 bg-white/5 font-bold">實際年總耗電量</td>
                                         <td className="border border-white/20 p-3 text-right">{data?.calculated_eui || '-'}</td>
-                                        <td className="border border-white/20 p-3 text-center text-slate-400">kWh/(m².yr)</td>
+                                        <td className="border border-white/20 p-3 text-center text-slate-400 font-light">kWh/(m².yr)</td>
                                         <td className="border border-white/20 p-3 bg-white/5 font-bold">雨中水年利用量</td>
                                         <td className="border border-white/20 p-3 text-right">{data?.water_data?.rainwater || '-'}</td>
-                                        <td className="border border-white/20 p-3 text-center text-slate-400">m³</td>
+                                        <td className="border border-white/20 p-3 text-center text-slate-400 font-light">m³</td>
                                     </tr>
                                     {/* 特殊用電 | 城鄉係數 */}
                                     <tr>
                                         <td className="border border-white/20 p-3 bg-white/5 font-bold">其他特殊用電 Ee</td>
                                         <td className="border border-white/20 p-3 text-right">{data?.special_electricity || '-'}</td>
-                                        <td className="border border-white/20 p-3 text-center text-slate-400">kWh/(m².yr)</td>
+                                        <td className="border border-white/20 p-3 text-center text-slate-400 font-light">kWh/(m².yr)</td>
                                         <td className="border border-white/20 p-3 bg-white/5 font-bold">城鄉係數 UR</td>
                                         <td className="border border-white/20 p-3 text-right">{data?.ur_coefficient || '1.0'}</td>
-                                        <td className="border border-white/20 p-3 text-center text-slate-400"></td>
+                                        <td className="border border-white/20 p-3 text-center text-slate-400 font-light"></td>
                                     </tr>
                                 </tbody>
                             </table>
