@@ -1513,7 +1513,7 @@ function Dashboard({ data, onRetry, onVerify, onDemo, loading, error, isLoggedIn
 
             {/* === 3. 比较区间 === */}
             <ComparisonRange
-                buildingType={data.building_type || 'office'}
+                buildingType={displayData?.building_type || 'office'}
                 yourValue={parseFloat(eui)}
                 percentile={65}
             />
