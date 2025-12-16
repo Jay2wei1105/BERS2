@@ -84,11 +84,12 @@ export function MetricCard({ title, value, unit, trend, trendValue, icon: Icon, 
 // ============================================
 
 export function GaugeChart({ value, max = 300, currentLevel, title = "建築能效等級", compact = false }) {
-    // 计算角度 (-90度到90度，共180度)
-    const percentage = Math.min(Math.max(value / max, 0), 1);
-    const angle = -90 + (percentage * 180);
+    // 反轉邏輯：數值越小越好，指針越往右（滿）
+    // 將 value 反轉到 max 比例
+    const reversedPercentage = Math.min(Math.max(1 - (value / max), 0), 1);
+    const angle = -90 + (reversedPercentage * 180);
 
-    // 定义5个等级区间的颜色
+    // 定義5個等級區間的顏色
     const segments = [
         { level: '1+', min: 0, max: 100, color: '#10b981', label: '鑽石級' },
         { level: '1', min: 100, max: 140, color: '#22c55e', label: '黃金級' },
@@ -113,20 +114,20 @@ export function GaugeChart({ value, max = 300, currentLevel, title = "建築能�
 
         // 根據當前數值決定主題顏色（用於光暈和邊框）
         let themeColor = '#ef4444';
-        let badgeColorClass = 'bg-red-500/20 text-red-400 border-red-500/50';
+        let badgeColorClass = 'bg-red-500 text-white border-red-600';
 
         if (value <= 100) {
             themeColor = '#10b981';
-            badgeColorClass = 'bg-emerald-500/20 text-emerald-400 border-emerald-400/50';
+            badgeColorClass = 'bg-emerald-500 text-white border-emerald-600';
         } else if (value <= 140) {
             themeColor = '#22c55e';
-            badgeColorClass = 'bg-green-500/20 text-green-400 border-green-400/50';
+            badgeColorClass = 'bg-green-500 text-white border-green-600';
         } else if (value <= 180) {
             themeColor = '#eab308';
-            badgeColorClass = 'bg-yellow-500/20 text-yellow-400 border-yellow-400/50';
+            badgeColorClass = 'bg-yellow-500 text-white border-yellow-600';
         } else if (value <= 220) {
             themeColor = '#f97316';
-            badgeColorClass = 'bg-orange-500/20 text-orange-400 border-orange-400/50';
+            badgeColorClass = 'bg-orange-500 text-white border-orange-600';
         }
 
         return (
@@ -167,7 +168,7 @@ export function GaugeChart({ value, max = 300, currentLevel, title = "建築能�
                         strokeWidth="12"
                         strokeLinecap="round"
                         strokeDasharray="220"
-                        strokeDashoffset={220 - (percentage * 220)}
+                        strokeDashoffset={220 - (reversedPercentage * 220)}
                         className="transition-all duration-1000 ease-out"
                         filter="url(#glow)"
                         opacity="0.9"
