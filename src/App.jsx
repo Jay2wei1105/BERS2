@@ -101,7 +101,8 @@ export default function App() {
             }
         } catch (err) {
             console.error('Dashboard verify error:', err);
-            setDashboardError('查詢時發生錯誤，請稍後再試。');
+            // 顯示詳細錯誤以便除錯
+            setDashboardError(`查詢失敗: ${err.message || err.error_description || JSON.stringify(err)}`);
             setIsLoggedIn(false);
         } finally {
             setDashboardLoading(false);
