@@ -124,6 +124,8 @@ export function ComparisonRange({ buildingType, yourValue, percentile }) {
 
 export function ElectricityTrendChart({ data, years, interactive = false }) {
     const [hoveredIndex, setHoveredIndex] = useState(null);
+    const [mousePos, setMousePos] = useState({ x: 0, y: 0 });
+    const containerRef = React.useRef(null);
 
     if (!data || data.length === 0) {
         return (
@@ -151,8 +153,28 @@ export function ElectricityTrendChart({ data, years, interactive = false }) {
         }).join(' ');
     };
 
+    // 處理鼠標移動
+    const handleMouseMove = (e) => {
+        if (!interactive || !containerRef.current) return;
+
+        const rect = containerRef.current.getBoundingClientRect();
+        const x = e.clientX - rect.left;
+        const width = rect.width;
+
+        // 計算最接近的索引
+        const percentage = Math.max(0, Math.min(1, x / width));
+        const index = Math.round(percentage * (data.length - 1));
+
+        setHoveredIndex(index);
+        setMousePos({ x: e.clientX, y: e.clientY }); // 記錄全局鼠標位置用於Tooltip
+    };
+
+    const handleMouseLeave = () => {
+        if (interactive) setHoveredIndex(null);
+    };
+
     return (
-        <div className="bg-white/5 backdrop-blur-md border border-white/10 rounded-3xl p-6">
+        <div className="bg-white/5 backdrop-blur-md border border-white/10 rounded-3xl p-6 relative">
             <div className="flex items-center justify-between mb-6">
                 <h3 className="text-lg font-bold text-white flex items-center gap-2">
                     <span className="w-1 h-6 bg-cyan-500 rounded-full"></span>
@@ -160,121 +182,159 @@ export function ElectricityTrendChart({ data, years, interactive = false }) {
                 </h3>
                 <div className="flex gap-4">
                     <div className="flex items-center gap-2">
-                        <div className="w-3 h-3 rounded-full bg-blue-500"></div>
-                        <span className="text-sm text-slate-400">{years?.[0] || '2023'}</span>
+                        <div className="w-2 h-2 rounded-full bg-blue-500"></div>
+                        <span className="text-xs text-slate-400">{years?.[0] || '2023'}</span>
                     </div>
                     <div className="flex items-center gap-2">
-                        <div className="w-3 h-3 rounded-full bg-green-500"></div>
-                        <span className="text-sm text-slate-400">{years?.[1] || '2024'}</span>
+                        <div className="w-2 h-2 rounded-full bg-green-500"></div>
+                        <span className="text-xs text-slate-400">{years?.[1] || '2024'}</span>
                     </div>
                 </div>
             </div>
 
-            {/* Hover提示 */}
-            {interactive && hoveredIndex !== null && (
-                <div className="mb-4 p-3 bg-blue-500/10 border border-blue-500/30 rounded-xl">
-                    <div className="flex items-center justify-between">
-                        <span className="text-slate-300 font-medium">{data[hoveredIndex]?.month}</span>
-                        <div className="flex gap-4">
-                            <span className="text-blue-400">{years?.[0]}: {data[hoveredIndex]?.year2023?.toLocaleString()} kWh</span>
-                            <span className="text-green-400">{years?.[1]}: {data[hoveredIndex]?.year2024?.toLocaleString()} kWh</span>
+            {/* 用於計算鼠標位置的容器 */}
+            <div
+                ref={containerRef}
+                className="relative cursor-crosshair touch-none"
+                onMouseMove={handleMouseMove}
+                onMouseLeave={handleMouseLeave}
+            >
+                {/* 浮動提示框 (跟隨鼠標或固定在圖表上方) */}
+                {interactive && hoveredIndex !== null && (
+                    <div
+                        className="absolute z-20 pointer-events-none transition-all duration-75"
+                        style={{
+                            left: `${(hoveredIndex / (data.length - 1)) * 100}%`,
+                            top: 0,
+                            transform: 'translate(-50%, -110%)'
+                        }}
+                    >
+                        <div className="bg-slate-900/90 backdrop-blur-xl border border-white/20 p-3 rounded-xl shadow-2xl min-w-[150px]">
+                            <div className="text-white font-bold mb-2 text-center border-b border-white/10 pb-1">
+                                {data[hoveredIndex]?.month}
+                            </div>
+                            <div className="space-y-1">
+                                <div className="flex justify-between items-center text-xs">
+                                    <span className="text-blue-400">{years?.[0]}:</span>
+                                    <span className="text-white font-mono">{data[hoveredIndex]?.year2023?.toLocaleString()}</span>
+                                </div>
+                                <div className="flex justify-between items-center text-xs">
+                                    <span className="text-green-400">{years?.[1]}:</span>
+                                    <span className="text-white font-mono">{data[hoveredIndex]?.year2024?.toLocaleString()}</span>
+                                </div>
+                            </div>
                         </div>
                     </div>
-                </div>
-            )}
+                )}
 
-            {/* SVG 圖表 */}
-            <svg viewBox="0 0 100 60" className="w-full" style={{ height: '250px' }}>
-                <defs>
-                    <linearGradient id="blueGradient" x1="0%" y1="0%" x2="0%" y2="100%">
-                        <stop offset="0%" stopColor="#3b82f6" stopOpacity="0.3" />
-                        <stop offset="100%" stopColor="#3b82f6" stopOpacity="0" />
-                    </linearGradient>
-                    <linearGradient id="greenGradient" x1="0%" y1="0%" x2="0%" y2="100%">
-                        <stop offset="0%" stopColor="#10b981" stopOpacity="0.3" />
-                        <stop offset="100%" stopColor="#10b981" stopOpacity="0" />
-                    </linearGradient>
-                </defs>
+                {/* SVG 圖表 */}
+                <svg viewBox="0 0 100 60" className="w-full" style={{ height: '250px', overflow: 'visible' }}>
+                    <defs>
+                        <linearGradient id="blueGradient" x1="0%" y1="0%" x2="0%" y2="100%">
+                            <stop offset="0%" stopColor="#3b82f6" stopOpacity="0.3" />
+                            <stop offset="100%" stopColor="#3b82f6" stopOpacity="0" />
+                        </linearGradient>
+                        <linearGradient id="greenGradient" x1="0%" y1="0%" x2="0%" y2="100%">
+                            <stop offset="0%" stopColor="#10b981" stopOpacity="0.3" />
+                            <stop offset="100%" stopColor="#10b981" stopOpacity="0" />
+                        </linearGradient>
+                    </defs>
 
-                {/* 網格線 */}
-                {[0, 20, 40, 60, 80, 100].map(y => (
-                    <line
-                        key={y}
-                        x1="0"
-                        y1={y * 0.5}
-                        x2="100"
-                        y2={y * 0.5}
-                        stroke="rgba(255,255,255,0.05)"
-                        strokeWidth="0.2"
+                    {/* 網格線 */}
+                    {[0, 20, 40, 60, 80, 100].map(y => (
+                        <line
+                            key={y}
+                            x1="0"
+                            y1={y * 0.5}
+                            x2="100"
+                            y2={y * 0.5}
+                            stroke="rgba(255,255,255,0.05)"
+                            strokeWidth="0.2"
+                        />
+                    ))}
+
+                    {/* 垂直引導線 */}
+                    {interactive && hoveredIndex !== null && (
+                        <line
+                            x1={(hoveredIndex / (data.length - 1)) * 100}
+                            y1="0"
+                            x2={(hoveredIndex / (data.length - 1)) * 100}
+                            y2="50"
+                            stroke="rgba(255,255,255,0.2)"
+                            strokeWidth="0.5"
+                            strokeDasharray="2 2"
+                        />
+                    )}
+
+                    {/* 2023年度線條 */}
+                    <path
+                        d={generatePath('year2023')}
+                        fill="none"
+                        stroke="#3b82f6"
+                        strokeWidth="0.8"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        className="transition-all duration-300"
+                        opacity={hoveredIndex !== null ? 0.3 : 1}
                     />
-                ))}
 
-                {/* 2023年度線條 */}
-                <path
-                    d={generatePath('year2023')}
-                    fill="none"
-                    stroke="#3b82f6"
-                    strokeWidth="0.5"
-                    className="transition-all duration-1000"
-                />
+                    {/* 2024年度線條 */}
+                    <path
+                        d={generatePath('year2024')}
+                        fill="none"
+                        stroke="#10b981"
+                        strokeWidth="0.8"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        className="transition-all duration-300"
+                        opacity={hoveredIndex !== null ? 0.3 : 1}
+                    />
 
-                {/* 2024年度線條 */}
-                <path
-                    d={generatePath('year2024')}
-                    fill="none"
-                    stroke="#10b981"
-                    strokeWidth="0.5"
-                    className="transition-all duration-1000"
-                />
+                    {/* 高亮路徑段（僅顯示Hover部分）- 可選效果 */}
+                    {/* 這裡我們選擇高亮數據點而不是線段 */}
 
-                {/* 數據點（交互）*/}
-                {data.map((d, i) => {
-                    const x = (i / (data.length - 1)) * 100;
-                    const isHovered = hoveredIndex === i;
-                    return (
-                        <g key={i}>
-                            {interactive && (
-                                <rect
-                                    x={x - 2}
-                                    y={0}
-                                    width={4}
-                                    height={50}
-                                    fill="transparent"
-                                    onMouseEnter={() => setHoveredIndex(i)}
-                                    onMouseLeave={() => setHoveredIndex(null)}
-                                    style={{ cursor: 'pointer' }}
+                    {/* 數據點 */}
+                    {data.map((d, i) => {
+                        const x = (i / (data.length - 1)) * 100;
+                        const isHovered = hoveredIndex === i;
+                        // 只在Hover時顯示點，或者總是顯示小點
+                        return (
+                            <g key={i}>
+                                <circle
+                                    cx={x}
+                                    cy={calculateY(d.year2023) * 0.5}
+                                    r={isHovered ? "2" : "0"} // 平常隱藏，hover時變大
+                                    fill="#3b82f6"
+                                    stroke="white"
+                                    strokeWidth="0.5"
+                                    className="transition-all duration-200"
+                                    style={{ transformOrigin: `${x}px ${calculateY(d.year2023) * 0.5}px` }}
                                 />
-                            )}
-                            <circle
-                                cx={x}
-                                cy={calculateY(d.year2023) * 0.5}
-                                r={isHovered ? "1.2" : "0.8"}
-                                fill="#3b82f6"
-                                className="transition-all"
-                            />
-                            <circle
-                                cx={x}
-                                cy={calculateY(d.year2024) * 0.5}
-                                r={isHovered ? "1.2" : "0.8"}
-                                fill="#10b981"
-                                className="transition-all"
-                            />
-                        </g>
-                    );
-                })}
-            </svg>
+                                <circle
+                                    cx={x}
+                                    cy={calculateY(d.year2024) * 0.5}
+                                    r={isHovered ? "2" : "0"} // 平常隱藏，hover時變大
+                                    fill="#10b981"
+                                    stroke="white"
+                                    strokeWidth="0.5"
+                                    className="transition-all duration-200"
+                                    style={{ transformOrigin: `${x}px ${calculateY(d.year2024) * 0.5}px` }}
+                                />
+                            </g>
+                        );
+                    })}
+                </svg>
+            </div>
 
             {/* 月份標籤 */}
-            <div className="grid grid-cols-12 gap-1 mt-2">
+            <div className="grid grid-cols-12 gap-1 mt-2 px-2"> {/* 增加 px-2 對齊圖表邊緣 */}
                 {data.map((d, i) => (
                     <div
                         key={i}
-                        className={`text-center text-xs ${hoveredIndex === i ? 'text-white font-bold' : 'text-slate-500'} transition-all`}
-                        onMouseEnter={() => interactive && setHoveredIndex(i)}
-                        onMouseLeave={() => interactive && setHoveredIndex(null)}
-                        style={{ cursor: interactive ? 'pointer' : 'default' }}
+                        className={`text-center text-xs transition-colors duration-200 ${hoveredIndex === i ? 'text-white font-bold scale-110' : 'text-slate-500'
+                            }`}
                     >
-                        {d.month}
+                        {d.month.replace('月', '')}
                     </div>
                 ))}
             </div>
@@ -349,8 +409,8 @@ export function EquipmentAnalysis({ equipment }) {
                             </div>
                             <div className="text-right">
                                 <span className={`text-xs px-2 py-1 rounded-full ${eq.color === 'green'
-                                        ? 'bg-green-500/20 text-green-400 border border-green-500/30'
-                                        : 'bg-orange-500/20 text-orange-400 border border-orange-500/30'
+                                    ? 'bg-green-500/20 text-green-400 border border-green-500/30'
+                                    : 'bg-orange-500/20 text-orange-400 border border-orange-500/30'
                                     }`}>
                                     {eq.status}
                                 </span>
@@ -366,8 +426,8 @@ export function EquipmentAnalysis({ equipment }) {
                             <div className="h-2 bg-white/10 rounded-full overflow-hidden">
                                 <div
                                     className={`h-full rounded-full transition-all duration-1000 ${eq.color === 'green'
-                                            ? 'bg-gradient-to-r from-green-500 to-emerald-400'
-                                            : 'bg-gradient-to-r from-orange-500 to-yellow-400'
+                                        ? 'bg-gradient-to-r from-green-500 to-emerald-400'
+                                        : 'bg-gradient-to-r from-orange-500 to-yellow-400'
                                         }`}
                                     style={{ width: `${eq.efficiency}%` }}
                                 ></div>
