@@ -26,7 +26,10 @@ export function BERSeTable({ data }) {
 
     // 构建评估表数据
     const buildTableData = () => {
-        if (!data) return [];
+        if (!data) {
+            console.warn('BERSeTable: No data provided');
+            return [];
+        }
 
         return [
             {
@@ -34,14 +37,14 @@ export function BERSeTable({ data }) {
                 title: '一、建筑物及空调基本资料',
                 icon: <FileText size={20} />,
                 rows: [
-                    { label: '建筑物名称', value: data.building_name || '未命名' },
-                    { label: '建筑物地址', value: data.basic_info?.address || '-' },
-                    { label: '总楼地板面积', value: `${data.total_area?.toLocaleString() || 0} m²` },
-                    { label: '地上总楼层数', value: data.basic_info?.floorsAbove || '-' },
-                    { label: '地下总楼层数', value: data.basic_info?.floorsBelow || '-' },
-                    { label: '建筑分类', value: getBuildingTypeName(data.building_type) },
-                    { label: '空调系统类型', value: data.ac_system || '中央空调' },
-                    { label: '评估日期', value: formatDate(data.created_at) }
+                    { label: '建筑物名称', value: data?.building_name || '未命名' },
+                    { label: '建筑物地址', value: data?.basic_info?.address || '-' },
+                    { label: '总楼地板面积', value: `${data?.total_area?.toLocaleString() || 0} m²` },
+                    { label: '地上总楼层数', value: data?.basic_info?.floorsAbove || '-' },
+                    { label: '地下总楼层数', value: data?.basic_info?.floorsBelow || '-' },
+                    { label: '建筑分类', value: getBuildingTypeName(data?.building_type) },
+                    { label: '空调系统类型', value: data?.ac_system || '中央空调' },
+                    { label: '评估日期', value: formatDate(data?.created_at) }
                 ]
             },
             {
@@ -49,18 +52,18 @@ export function BERSeTable({ data }) {
                 title: '二、能效指标',
                 icon: <FileText size={20} />,
                 rows: [
-                    { label: '年总用电量', value: `${data.annual_electricity?.toLocaleString() || 0} kWh`, highlight: true },
-                    { label: '实际 EUI', value: `${data.calculated_eui || 0} kWh/m².yr`, highlight: true },
-                    { label: 'BERS 等级', value: calculateBERSLevel(data.calculated_eui), highlight: true },
-                    { label: '排碳量', value: `${((data.annual_electricity * 0.502) / 1000).toFixed(2)} 吨CO2/yr` },
-                    { label: '电费年度', value: data.electricity_years?.join(', ') || '-' }
+                    { label: '年总用电量', value: `${data?.annual_electricity?.toLocaleString() || 0} kWh`, highlight: true },
+                    { label: '实际 EUI', value: `${data?.calculated_eui || 0} kWh/m².yr`, highlight: true },
+                    { label: 'BERS 等级', value: calculateBERSLevel(data?.calculated_eui), highlight: true },
+                    { label: '排碳量', value: `${((data?.annual_electricity * 0.502) / 1000 || 0).toFixed(2)} 吨CO2/yr` },
+                    { label: '电费年度', value: data?.electricity_years?.join(', ') || '-' }
                 ]
             },
             {
                 id: 'spaceData',
                 title: '三、空间配置',
                 icon: <FileText size={20} />,
-                rows: data.spaces?.map((space, i) => ({
+                rows: data?.spaces?.map((space, i) => ({
                     label: `${space.name} (${space.type})`,
                     value: `${space.area} m²`
                 })) || []
@@ -70,10 +73,10 @@ export function BERSeTable({ data }) {
                 title: '四、设备资料',
                 icon: <FileText size={20} />,
                 rows: [
-                    ...formatEquipment('空调设备', data.equipment?.ac),
-                    ...formatEquipment('照明设备', data.equipment?.lighting),
-                    ...formatEquipment('电梯设备', data.equipment?.elevator),
-                    ...formatEquipment('机房设备', data.equipment?.serverRoom)
+                    ...formatEquipment('空调设备', data?.equipment?.ac),
+                    ...formatEquipment('照明设备', data?.equipment?.lighting),
+                    ...formatEquipment('电梯设备', data?.equipment?.elevator),
+                    ...formatEquipment('机房设备', data?.equipment?.serverRoom)
                 ]
             },
             {
@@ -81,11 +84,11 @@ export function BERSeTable({ data }) {
                 title: '五、能效计算明细',
                 icon: <FileText size={20} />,
                 rows: [
-                    { label: '建筑总面积', value: `${data.total_area?.toLocaleString()} m²` },
-                    { label: '年总用电量', value: `${data.annual_electricity?.toLocaleString()} kWh` },
+                    { label: '建筑总面积', value: `${data?.total_area?.toLocaleString() || 0} m²` },
+                    { label: '年总用电量', value: `${data?.annual_electricity?.toLocaleString() || 0} kWh` },
                     { label: 'EUI 计算式', value: '年总用电量 ÷ 建筑总面积' },
-                    { label: '计算结果', value: `${((data.annual_electricity / data.total_area) || 0).toFixed(2)} kWh/m².yr`, highlight: true },
-                    { label: '等级判定', value: calculateBERSLevel(data.calculated_eui), highlight: true }
+                    { label: '计算结果', value: `${((data?.annual_electricity / data?.total_area) || 0).toFixed(2)} kWh/m².yr`, highlight: true },
+                    { label: '等级判定', value: calculateBERSLevel(data?.calculated_eui), highlight: true }
                 ]
             }
         ];
@@ -146,8 +149,8 @@ export function BERSeTable({ data }) {
                                                     {row.label}
                                                 </td>
                                                 <td className={`py-3 text-right ${row.highlight
-                                                        ? 'text-blue-400 font-bold text-base'
-                                                        : 'text-white font-medium'
+                                                    ? 'text-blue-400 font-bold text-base'
+                                                    : 'text-white font-medium'
                                                     }`}>
                                                     {row.value}
                                                 </td>
