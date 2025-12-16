@@ -901,7 +901,7 @@ function AnalysisForm({ onComplete }) {
                 <SectionCard icon={<Home size={16} />} title="空間面積資料">
                     <div className="space-y-4">
                         {spaces.map((space, index) => (
-                            <div key={index} className="grid md:grid-cols-4 gap-4 bg-white/5 p-4 rounded-2xl border border-white/10">
+                            <div key={index} className="grid md:grid-cols-5 gap-4 bg-white/5 p-4 rounded-2xl border border-white/10">
                                 <div className="md:col-span-1">
                                     <InputField label="空間名稱" value={space.name} onChange={(e) => updateSpace(index, 'name', e.target.value)} />
                                 </div>
@@ -943,7 +943,7 @@ function AnalysisForm({ onComplete }) {
                                     <InputField label="面積 (m²)" type="number" value={space.area} onChange={(e) => updateSpace(index, 'area', e.target.value)} />
                                 </div>
 
-                                <div className="md:col-span-4 flex justify-end">
+                                <div className="md:col-span-5 flex justify-end">
                                     <button type="button" onClick={() => removeSpaceRow(index)} className="text-xs text-slate-400 hover:text-red-400">
                                         移除此空間
                                     </button>
