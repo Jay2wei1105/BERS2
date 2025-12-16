@@ -131,5 +131,31 @@ export const DEMO_DATA = {
             sor: 1.0,
             elec: 32000
         }
-    ]
+    ],
+
+    // 耗能分區腳註數據
+    consumption_footer: {
+        assessedArea: 4500,           // 評估分區總面積 (扣除免評估分區)
+        totalZoneElec: 395000,        // 耗能分區總年耗電量
+        te: 750000,                   // 實際年總耗電量 TE (kWh/yr)
+        et: 80000,                    // 輸送設備年耗電量 (kWh/yr)
+        ep: 30000,                    // 揚水設備年耗電量 (kWh/yr)
+        eh: 0,                        // 加熱設備年耗電量 (kWh/yr)
+        ee: 5000,                     // 其他特殊用電量 (kWh/yr)
+        teui: 119,                    // 總耗電密度 (kWh/(m².yr))
+        majorEui: 132                 // 主設備用電密度 (kWh/(m².yr))
+    },
+
+    // 能效指標數據
+    energy_indicators: {
+        euiMin: 80,                   // EUI 最小值
+        euiGb: 140,                   // EUI GB 基準值
+        euiM: 120,                    // EUI 中位值
+        euiMax: 200,                  // EUI 最大值
+        deltaEui: 30,                 // 耗電密度差距
+        euiStar: 150,                 // 耗電密度指標 EUI*
+        ceiStar: 74.25,               // 碳排密度指標 CEI* (= EUI* × 0.495)
+        scoreE: 75,                   // 能效得分
+        level: '2 級 (銀級)'          // 能效等級判定
+    }
 };

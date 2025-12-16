@@ -91,15 +91,15 @@ export function BERSeTable({ data }) {
                 icon: <FileText size={20} />,
                 rows: data?.consumption_zones || [],
                 footer: {
-                    assessedArea: data?.total_area || '-',
-                    totalZoneElec: '-',
-                    te: data?.annual_electricity?.toLocaleString() || '-',
-                    et: '-',
-                    ep: '-',
-                    eh: '-',
-                    ee: data?.special_electricity || '-',
-                    teui: '-',
-                    majorEui: '-'
+                    assessedArea: data?.consumption_footer?.assessedArea || data?.total_area || '-',
+                    totalZoneElec: data?.consumption_footer?.totalZoneElec || '-',
+                    te: data?.consumption_footer?.te?.toLocaleString() || data?.annual_electricity?.toLocaleString() || '-',
+                    et: data?.consumption_footer?.et || '-',
+                    ep: data?.consumption_footer?.ep || '-',
+                    eh: data?.consumption_footer?.eh || '-',
+                    ee: data?.consumption_footer?.ee || data?.special_electricity || '-',
+                    teui: data?.consumption_footer?.teui || '-',
+                    majorEui: data?.consumption_footer?.majorEui || '-'
                 }
             },
             {
@@ -107,13 +107,13 @@ export function BERSeTable({ data }) {
                 title: '五、能效指標',
                 icon: <FileText size={20} />,
                 rows: [
-                    { label: 'EUI 最小值', value: '-', unit: 'kWh/(m².yr)', label2: 'EUI GB 基準值', value2: '-', unit2: 'kWh/(m².yr)' },
-                    { label: 'EUI 中位值', value: '-', unit: 'kWh/(m².yr)', label2: 'EUI 最大值', value2: '-', unit2: 'kWh/(m².yr)' },
-                    { label: "耗電密度差距", value: '-', unit: 'kWh/(m².yr)', isWide: true },
-                    { label: '耗電密度指標', value: '-', unit: 'kWh/(m².yr)', isWide: true },
-                    { label: '碳排密度指標', value: '-', unit: 'kgCO2/(m².yr)', isWide: true },
-                    { label: '能效得分計算', value: '-', unit: '分', isWide: true },
-                    { label: '能效等級判定', value: calculateBERSLevel(data?.calculated_eui), unit: '等級', isWide: true, highlight: true }
+                    { label: 'EUI 最小值', value: data?.energy_indicators?.euiMin || '-', unit: 'kWh/(m².yr)', label2: 'EUI GB 基準值', value2: data?.energy_indicators?.euiGb || '-', unit2: 'kWh/(m².yr)' },
+                    { label: 'EUI 中位值', value: data?.energy_indicators?.euiM || '-', unit: 'kWh/(m².yr)', label2: 'EUI 最大值', value2: data?.energy_indicators?.euiMax || '-', unit2: 'kWh/(m².yr)' },
+                    { label: "耗電密度差距", value: data?.energy_indicators?.deltaEui || '-', unit: 'kWh/(m².yr)', isWide: true },
+                    { label: '耗電密度指標', value: data?.energy_indicators?.euiStar || '-', unit: 'kWh/(m².yr)', isWide: true },
+                    { label: '碳排密度指標', value: data?.energy_indicators?.ceiStar || '-', unit: 'kgCO2/(m².yr)', isWide: true },
+                    { label: '能效得分計算', value: data?.energy_indicators?.scoreE || '-', unit: '分', isWide: true },
+                    { label: '能效等級判定', value: data?.energy_indicators?.level || calculateBERSLevel(data?.calculated_eui), unit: '等級', isWide: true, highlight: true }
                 ]
             },
         ];
@@ -189,7 +189,7 @@ export function BERSeTable({ data }) {
                                                     <td className="border border-white/20 p-3 text-right">{section.rows[2].value}</td>
                                                     <td className="border border-white/20 p-3 text-center text-slate-400 font-light">(m²)</td>
                                                     <td className="border border-white/20 p-3 bg-white/5 font-bold">評估樓地板面積</td>
-                                                    <td className="border border-white/20 p-3 text-right text-blue-300 font-medium">{section.rows[3].value}</td>
+                                                    <td className="border border-white/20 p-3 text-right text-slate-200 font-medium">{section.rows[3].value}</td>
                                                     <td className="border border-white/20 p-3 text-center text-slate-400 font-light">(m²)</td>
                                                 </tr>
                                                 <tr>
@@ -224,9 +224,6 @@ export function BERSeTable({ data }) {
                                 {/* 2. Reliability */}
                                 {section.id === 'reliability' && (
                                     <div className="overflow-x-auto">
-                                        <div className="text-slate-300 mb-2 font-bold bg-white/10 p-2 rounded">
-                                            實際年總耗電量信賴度檢驗：
-                                        </div>
                                         <table className="w-full text-sm border-collapse border border-white/20">
                                             <colgroup>
                                                 <col className="w-[40%]" />
@@ -236,7 +233,7 @@ export function BERSeTable({ data }) {
                                             <tbody className="text-slate-200">
                                                 <tr>
                                                     <td className="border border-white/20 p-3 bg-white/5 font-bold">年總耗電量</td>
-                                                    <td className="border border-white/20 p-3 text-right text-lg text-blue-300 font-bold">{section.rows[0].value}</td>
+                                                    <td className="border border-white/20 p-3 text-right text-lg text-slate-200 font-bold">{section.rows[0].value}</td>
                                                     <td className="border border-white/20 p-3 text-center text-slate-400 font-light">{section.rows[0].unit}</td>
                                                 </tr>
                                                 <tr>
@@ -305,9 +302,9 @@ export function BERSeTable({ data }) {
                                                 )}
                                                 <tr>
                                                     <td className="border border-white/20 p-3 bg-white/5 font-bold">免評估分區總面積</td>
-                                                    <td className="border border-white/20 p-3 text-right text-blue-300 font-medium font-mono text-base">{section.footer.totalArea}</td>
+                                                    <td className="border border-white/20 p-3 text-right text-slate-200 font-medium font-mono text-base">{section.footer.totalArea}</td>
                                                     <td className="border border-white/20 p-3 bg-white/5 font-bold text-right">免評估分區總年耗電量</td>
-                                                    <td className="border border-white/20 p-3 text-right text-blue-300 font-medium font-mono text-base">{section.footer.totalElec}</td>
+                                                    <td className="border border-white/20 p-3 text-right text-slate-200 font-medium font-mono text-base">{section.footer.totalElec}</td>
                                                 </tr>
                                             </tbody>
                                         </table>
@@ -355,7 +352,7 @@ export function BERSeTable({ data }) {
                                                     <td className="border border-white/20 p-2 bg-white/5 font-bold" colSpan="7">
                                                         耗能分區總年耗電量
                                                     </td>
-                                                    <td className="border border-white/20 p-2 text-right text-blue-300 font-bold">{section.footer.totalZoneElec}</td>
+                                                    <td className="border border-white/20 p-2 text-right text-slate-200 font-bold">{section.footer.totalZoneElec}</td>
                                                 </tr>
                                                 <tr>
                                                     <td className="border border-white/20 p-2 bg-white/5 font-bold">實際年總耗電量</td>
