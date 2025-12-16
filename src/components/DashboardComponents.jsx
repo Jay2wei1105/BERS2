@@ -63,8 +63,8 @@ export function MetricCard({ title, value, unit, trend, trendValue, icon: Icon, 
                 </div>
 
                 <div className="flex items-baseline gap-2 mb-3">
-                    <span className="text-4xl font-bold text-white">{value}</span>
-                    <span className="text-lg text-slate-400">{unit}</span>
+                    <span className="text-6xl font-bold text-white">{value}</span>
+                    <span className="text-xl text-slate-400">{unit}</span>
                 </div>
 
                 {/* 趋势指示 */}
