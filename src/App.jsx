@@ -522,7 +522,9 @@ function AnalysisForm({ onComplete }) {
         contactEmail: '',
         phone: '',
         floorArea: '',    // 新增：樓地板面積
-        buildingType: 'office' // 新增：建築類型 (預設辦公)
+        buildingType: 'office', // 新增：建築類型 (預設辦公)
+        floorsAbove: '',  // 新增：地上總樓層數
+        floorsBelow: ''   // 新增：地下總樓層數
     });
 
     // 營運時間狀態 (改為單行範圍)
@@ -574,11 +576,13 @@ function AnalysisForm({ onComplete }) {
         hotWaterSystem: '',   // 熱水供應設備 (選擇: 電熱/瓦斯/太陽能/熱泵)
     });
 
-    // 【新增】營運率資料狀態
+    // 【新增】營運率資料狀態 - 5個空間類型
     const [operationRates, setOperationRates] = useState({
-        elevatorOR: 0.6,      // 電梯營運率 (預設 0.6)
-        escalatorOR: 0.8,     // 電扶梯營運率 (預設 0.8)
-        buildingClassOR: 1.0, // 建築分類營運率 (從 SORi 查找)
+        exhibition: '',           // 展覽區營運率 (DL)
+        largeMeeting: '',         // 200人以上大會議室 (D2)
+        smallMeeting: '',         // 200人以下會議室 (D3)
+        performanceNational: '',  // 國家級演藝廳 (G1)
+        performanceGeneral: ''    // 一般級演藝廳 (G2)
     });
 
     // 【新增】旅館特殊資料（如果是旅館類建築）
@@ -1442,9 +1446,6 @@ function Dashboard({ data, onRetry, onVerify, onDemo, loading, error, isLoggedIn
                                 <span className="bg-white/10 px-2 py-0.5 rounded text-xs border border-white/10">專案</span>
                                 <span>{displayData?.building_name || displayData?.basic_info?.companyName || '未命名建築'}</span>
                             </div>
-                        )}
-                        {isDemo && (
-                            <p className="text-xs text-slate-400 mt-1 ml-1">僅供預覽，登入以查看真實報告</p>
                         )}
                     </div>
                 </div>
