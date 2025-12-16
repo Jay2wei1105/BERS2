@@ -43,7 +43,7 @@ export function MetricCard({ title, value, unit, trend, trendValue, icon: Icon, 
     const trendColor = trend === 'up' ? 'text-green-400' : trend === 'down' ? 'text-red-400' : 'text-slate-400';
 
     return (
-        <div className={`relative bg-gradient-to-br ${classes.bg} backdrop-blur-md border ${classes.border} rounded-3xl p-6 overflow-hidden hover-lift`}>
+        <div className={`relative bg-gradient-to-br ${classes.bg} backdrop-blur-md border ${classes.border} rounded-3xl p-6 overflow-hidden hover-lift h-full flex flex-col`}>
             {/* 背景装饰图标 */}
             {Icon && (
                 <div className="absolute top-4 right-4 opacity-10">
@@ -52,8 +52,9 @@ export function MetricCard({ title, value, unit, trend, trendValue, icon: Icon, 
             )}
 
             {/* 内容 */}
-            <div className="relative z-10">
-                <div className="flex items-center gap-2 mb-2">
+            <div className="relative z-10 flex flex-col h-full">
+                {/* 標題在上方 */}
+                <div className="flex items-center gap-2 mb-4">
                     {Icon && (
                         <div className={`p-2 rounded-lg ${classes.iconBg}`}>
                             <Icon size={20} className={classes.text} />
@@ -62,14 +63,17 @@ export function MetricCard({ title, value, unit, trend, trendValue, icon: Icon, 
                     <p className="text-slate-400 text-sm font-medium">{title}</p>
                 </div>
 
-                <div className="flex items-baseline gap-2 mb-3">
-                    <span className="text-6xl font-bold text-white">{value}</span>
-                    <span className="text-xl text-slate-400">{unit}</span>
+                {/* 數字在中間（垂直居中） */}
+                <div className="flex-1 flex items-center justify-start">
+                    <div className="flex items-baseline gap-2">
+                        <span className="text-5xl font-bold text-white">{value}</span>
+                        <span className="text-lg text-slate-400">{unit}</span>
+                    </div>
                 </div>
 
-                {/* 趋势指示 */}
+                {/* 趋势指示在底部 */}
                 {trend && (
-                    <div className={`flex items-center gap-1 text-sm ${trendColor}`}>
+                    <div className={`flex items-center gap-1 text-sm ${trendColor} mt-auto`}>
                         <TrendIcon size={16} />
                         <span className="font-medium">{trendValue}</span>
                     </div>
