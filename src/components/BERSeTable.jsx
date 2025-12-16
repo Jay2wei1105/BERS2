@@ -107,8 +107,8 @@ export function BERSeTable({ data }) {
                 title: '五、能效指標',
                 icon: <FileText size={20} />,
                 rows: [
-                    { label: 'EUI 最小值', value: '-', unit: 'kWh/(m².yr)', label2: 'EUI GB 基準值 EUIg', value2: '-', unit2: 'kWh/(m².yr)' },
-                    { label: 'EUI 中位值', value: '-', unit: 'kWh/(m².yr)', label2: 'EUI 最大值 EUImax', value2: '-', unit2: 'kWh/(m².yr)' },
+                    { label: 'EUI 最小值', value: '-', unit: 'kWh/(m².yr)', label2: 'EUI GB 基準值', value2: '-', unit2: 'kWh/(m².yr)' },
+                    { label: 'EUI 中位值', value: '-', unit: 'kWh/(m².yr)', label2: 'EUI 最大值', value2: '-', unit2: 'kWh/(m².yr)' },
                     { label: "耗電密度差距", value: '-', unit: 'kWh/(m².yr)', isWide: true },
                     { label: '耗電密度指標', value: '-', unit: 'kWh/(m².yr)', isWide: true },
                     { label: '碳排密度指標', value: '-', unit: 'kgCO2/(m².yr)', isWide: true },
@@ -188,7 +188,7 @@ export function BERSeTable({ data }) {
                                                     <td className="border border-white/20 p-3 bg-white/5 font-bold">總樓地板面積</td>
                                                     <td className="border border-white/20 p-3 text-right">{section.rows[2].value}</td>
                                                     <td className="border border-white/20 p-3 text-center text-slate-400 font-light">(m²)</td>
-                                                    <td className="border border-white/20 p-3 bg-white/5 font-bold">評估樓地板面積 Afe</td>
+                                                    <td className="border border-white/20 p-3 bg-white/5 font-bold">評估樓地板面積</td>
                                                     <td className="border border-white/20 p-3 text-right text-blue-300 font-medium">{section.rows[3].value}</td>
                                                     <td className="border border-white/20 p-3 text-center text-slate-400 font-light">(m²)</td>
                                                 </tr>
@@ -209,10 +209,10 @@ export function BERSeTable({ data }) {
                                                     <td className="border border-white/20 p-3 text-center text-slate-400 font-light">m³</td>
                                                 </tr>
                                                 <tr>
-                                                    <td className="border border-white/20 p-3 bg-white/5 font-bold">其他特殊用電 Ee</td>
+                                                    <td className="border border-white/20 p-3 bg-white/5 font-bold">其他特殊用電</td>
                                                     <td className="border border-white/20 p-3 text-right">{section.rows[8].value}</td>
                                                     <td className="border border-white/20 p-3 text-center text-slate-400 font-light">kWh/(m².yr)</td>
-                                                    <td className="border border-white/20 p-3 bg-white/5 font-bold">城鄉係數 UR</td>
+                                                    <td className="border border-white/20 p-3 bg-white/5 font-bold">城鄉係數</td>
                                                     <td className="border border-white/20 p-3 text-right">{section.rows[9].value}</td>
                                                     <td className="border border-white/20 p-3 text-center text-slate-400 font-light"></td>
                                                 </tr>
@@ -281,8 +281,8 @@ export function BERSeTable({ data }) {
                                             <thead>
                                                 <tr className="bg-white/10 text-white font-bold">
                                                     <th className="border border-white/20 p-3 text-center">免評估分區</th>
-                                                    <th className="border border-white/20 p-3 text-center w-32">Afk面積<br /><span className="text-xs font-normal">(m2)</span></th>
-                                                    <th className="border border-white/20 p-3 text-center">年耗電量 Enk 計算公式<br /><span className="text-xs font-normal">(kWh/yr)</span></th>
+                                                    <th className="border border-white/20 p-3 text-center w-32">面積<br /><span className="text-xs font-normal">(m²)</span></th>
+                                                    <th className="border border-white/20 p-3 text-center">年耗電量計算公式<br /><span className="text-xs font-normal">(kWh/yr)</span></th>
                                                     <th className="border border-white/20 p-3 text-center w-32">年耗電量<br /><span className="text-xs font-normal">(kWh/yr)</span></th>
                                                 </tr>
                                             </thead>
@@ -304,9 +304,9 @@ export function BERSeTable({ data }) {
                                                     </tr>
                                                 )}
                                                 <tr>
-                                                    <td className="border border-white/20 p-3 bg-white/5 font-bold">免評估分區總面積<br />AFn</td>
+                                                    <td className="border border-white/20 p-3 bg-white/5 font-bold">免評估分區總面積</td>
                                                     <td className="border border-white/20 p-3 text-right text-blue-300 font-medium font-mono text-base">{section.footer.totalArea}</td>
-                                                    <td className="border border-white/20 p-3 bg-white/5 font-bold text-right">免評估分區總年耗電量 EN</td>
+                                                    <td className="border border-white/20 p-3 bg-white/5 font-bold text-right">免評估分區總年耗電量</td>
                                                     <td className="border border-white/20 p-3 text-right text-blue-300 font-medium font-mono text-base">{section.footer.totalElec}</td>
                                                 </tr>
                                             </tbody>
@@ -321,12 +321,12 @@ export function BERSeTable({ data }) {
                                             <thead>
                                                 <tr className="bg-white/10 text-white font-bold">
                                                     <th className="border border-white/20 p-2 text-center">耗能分區</th>
-                                                    <th className="border border-white/20 p-2 text-center">面積<br /><span className="text-xs font-normal">m2</span></th>
+                                                    <th className="border border-white/20 p-2 text-center">面積<br /><span className="text-xs font-normal">m²</span></th>
                                                     <th className="border border-white/20 p-2 text-center">AEUIm<br /><span className="text-xs font-normal">kWh/(m².yr)</span></th>
                                                     <th className="border border-white/20 p-2 text-center">LEUIm<br /><span className="text-xs font-normal">kWh/(m².yr)</span></th>
                                                     <th className="border border-white/20 p-2 text-center">EEUIm<br /><span className="text-xs font-normal">kWh/(m².yr)</span></th>
-                                                    <th className="border border-white/20 p-2 text-center">城鄉係數UR</th>
-                                                    <th className="border border-white/20 p-2 text-center">空間營運率<br /><span className="text-xs font-normal">SORi</span></th>
+                                                    <th className="border border-white/20 p-2 text-center">城鄉係數<br />UR</th>
+                                                    <th className="border border-white/20 p-2 text-center">空間營運率<br /><span className="text-xs font-normal"></span></th>
                                                     <th className="border border-white/20 p-2 text-center">年耗電量<br /><span className="text-xs font-normal">(kWh/yr)</span></th>
                                                 </tr>
                                             </thead>
@@ -351,13 +351,6 @@ export function BERSeTable({ data }) {
                                                         </td>
                                                     </tr>
                                                 )}
-                                                <tr>
-                                                    <td className="border border-white/20 p-2 bg-white/5 font-bold">評估分區總面積</td>
-                                                    <td className="border border-white/20 p-2 text-right text-blue-300 font-bold">{section.footer.assessedArea}</td>
-                                                    <td className="border border-white/20 p-2" colSpan="3"></td>
-                                                    <td className="border border-white/20 p-2 text-center">1.0</td>
-                                                    <td className="border border-white/20 p-2" colSpan="2"></td>
-                                                </tr>
                                                 <tr>
                                                     <td className="border border-white/20 p-2 bg-white/5 font-bold" colSpan="7">
                                                         耗能分區總年耗電量
