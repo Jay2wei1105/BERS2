@@ -1,0 +1,32 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Dashboard组件动画 */
+.hover-lift {
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.hover-lift:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.4);
+}
+
+/* 油表指针动画 */
+@keyframes gaugeRotate {
+  from {
+    transform: rotate(-90deg);
+  }
+
+  to {
+    transform: rotate(var(--angle));
+  }
+}
+
+
+body {
+  margin: 0;
+  min-height: 100vh;
+  background-color: #020617;
+  font-family: 'Inter', 'Noto Sans TC', sans-serif;
+}
