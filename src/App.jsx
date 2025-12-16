@@ -546,7 +546,7 @@ function AnalysisForm({ onComplete }) {
 
     // 空間狀態
     const [spaces, setSpaces] = useState([
-        { name: '', type: 'office', area: '', acUsage: 'intermittent' } // 新增 acUsage (間歇/整日)
+        { name: '', type: 'office', area: '', acUsage: 'intermittent', isWaterCooled: false } // 新增 isWaterCooled (是否為水冷)
     ]);
 
     // 設備狀態
@@ -926,6 +926,19 @@ function AnalysisForm({ onComplete }) {
                                         useValueLabel
                                     />
                                 </div>
+                                {/* 新增：是否為水冷 */}
+                                <div className="md:col-span-1">
+                                    <SelectField
+                                        label="是否為水冷"
+                                        value={space.isWaterCooled}
+                                        onChange={(e) => updateSpace(index, 'isWaterCooled', e.target.value === 'true')}
+                                        options={[
+                                            { value: 'false', label: '否' },
+                                            { value: 'true', label: '是' }
+                                        ]}
+                                        useValueLabel
+                                    />
+                                </div>
                                 <div className="md:col-span-1">
                                     <InputField label="面積 (m²)" type="number" value={space.area} onChange={(e) => updateSpace(index, 'area', e.target.value)} />
                                 </div>
@@ -1123,7 +1136,7 @@ function AnalysisForm({ onComplete }) {
 
                         <div className="grid md:grid-cols-2 gap-4">
                             <InputField
-                                label="展覽區營運率 (DL)"
+                                label="展覽區營運率"
                                 type="number"
                                 step="0.01"
                                 min="0"
@@ -1133,7 +1146,7 @@ function AnalysisForm({ onComplete }) {
                                 placeholder="例如: 0.6"
                             />
                             <InputField
-                                label="200人以上大會議室營運率 (D2)"
+                                label="200人以上大會議室營運率"
                                 type="number"
                                 step="0.01"
                                 min="0"
@@ -1143,7 +1156,7 @@ function AnalysisForm({ onComplete }) {
                                 placeholder="例如: 0.7"
                             />
                             <InputField
-                                label="200人以下會議室營運率 (D3)"
+                                label="200人以下會議室營運率"
                                 type="number"
                                 step="0.01"
                                 min="0"
@@ -1153,7 +1166,7 @@ function AnalysisForm({ onComplete }) {
                                 placeholder="例如: 0.6"
                             />
                             <InputField
-                                label="國家級演藝廳營運率 (G1)"
+                                label="國家級演藝廳營運率"
                                 type="number"
                                 step="0.01"
                                 min="0"
@@ -1163,7 +1176,7 @@ function AnalysisForm({ onComplete }) {
                                 placeholder="例如: 0.8"
                             />
                             <InputField
-                                label="一般級演藝廳營運率 (G2)"
+                                label="一般級演藝廳營運率"
                                 type="number"
                                 step="0.01"
                                 min="0"
@@ -1180,11 +1193,11 @@ function AnalysisForm({ onComplete }) {
                                 <strong className="text-white">營運率參考值：</strong>
                             </p>
                             <ul className="text-xs text-slate-400 space-y-1 ml-4">
-                                <li>• 展覽區(DL)：通常為 100 部年/台(上限273)</li>
-                                <li>• 200人以上會議室(D2)：通常為 100 部年/台(上限208)</li>
-                                <li>• 200人以下會議室(D3)：通常為 100 部年/台(上限208)</li>
-                                <li>• 國家級演藝廳(G1)：通常為 100 部年/台(上限156)</li>
-                                <li>• 一般級演藝廳(G2)：通常為 100 部年/台(上限156)</li>
+                                <li>• 展覽區：通常為 100 部年/台(上限273)</li>
+                                <li>• 200人以上會議室：通常為 100 部年/台(上限208)</li>
+                                <li>• 200人以下會議室：通常為 100 部年/台(上限208)</li>
+                                <li>• 國家級演藝廳：通常為 100 部年/台(上限156)</li>
+                                <li>• 一般級演藝廳：通常為 100 部年/台(上限156)</li>
                             </ul>
                         </div>
                     </div>

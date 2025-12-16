@@ -378,12 +378,12 @@ export function BERSeTable({ data }) {
                                                 </tr>
                                                 <tr>
                                                     <td className="border border-white/20 p-2 bg-white/5 font-bold" colSpan="5">總耗電密度</td>
-                                                    <td className="border border-white/20 p-2 text-right text-red-400 font-bold" colSpan="2">{section.footer.teui}</td>
+                                                    <td className="border border-white/20 p-2 text-right text-slate-200 font-bold" colSpan="2">{section.footer.teui}</td>
                                                     <td className="border border-white/20 p-2 text-center text-slate-400">kWh/(m².yr)</td>
                                                 </tr>
                                                 <tr>
                                                     <td className="border border-white/20 p-2 bg-white/5 font-bold" colSpan="5">主設備用電密度</td>
-                                                    <td className="border border-white/20 p-2 text-right text-red-400 font-bold" colSpan="2">{section.footer.majorEui}</td>
+                                                    <td className="border border-white/20 p-2 text-right text-slate-200 font-bold" colSpan="2">{section.footer.majorEui}</td>
                                                     <td className="border border-white/20 p-2 text-center text-slate-400">kWh/(m².yr)</td>
                                                 </tr>
                                             </tbody>
@@ -419,7 +419,7 @@ export function BERSeTable({ data }) {
                                                 {section.rows.slice(2).map((row, i) => (
                                                     <tr key={i + 2}>
                                                         <td className="border border-white/20 p-3 bg-white/5 font-bold" colSpan="4">{row.label}</td>
-                                                        <td className={`border border-white/20 p-3 text-right ${row.highlight ? 'text-green-400 font-bold text-lg' : 'text-red-400'}`}>
+                                                        <td className={`border border-white/20 p-3 text-right ${row.highlight ? 'text-green-400 font-bold text-lg' : 'text-slate-200'}`}>
                                                             {row.value}
                                                         </td>
                                                         <td className="border border-white/20 p-3 text-center text-slate-400 font-light">{row.unit}</td>
