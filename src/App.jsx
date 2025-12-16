@@ -790,6 +790,12 @@ function AnalysisForm({ onComplete }) {
                         {/* 新增欄位：樓地板面積 */}
                         <InputField label="樓地板面積 (m²)" type="number" value={basicInfo.floorArea} onChange={(e) => updateBasicInfo('floorArea', e.target.value)} />
 
+                        {/* 新增欄位：地上總樓層數 */}
+                        <InputField label="地上總樓層數" type="number" value={basicInfo.floorsAbove} onChange={(e) => updateBasicInfo('floorsAbove', e.target.value)} />
+
+                        {/* 新增欄位：地下總樓層數 */}
+                        <InputField label="地下總樓層數" type="number" value={basicInfo.floorsBelow} onChange={(e) => updateBasicInfo('floorsBelow', e.target.value)} />
+
                         <div className="md:col-span-2">
                             <InputField label="地址" value={basicInfo.address} onChange={(e) => updateBasicInfo('address', e.target.value)} />
                         </div>
@@ -1111,43 +1117,74 @@ function AnalysisForm({ onComplete }) {
                     <div className="space-y-4">
                         <div className="bg-blue-500/10 border border-blue-500/30 rounded-xl p-4 mb-4">
                             <p className="text-sm text-blue-300">
-                                💡 提示：營運率會根據建築分類自動調整。一般電梯預設 0.6，電扶梯預設 0.8。
+                                💡 提示：針對有會議或展演空間的建築物，請填寫相關空間的營運率。非必填，如無相關空間可留空。
                             </p>
                         </div>
 
                         <div className="grid md:grid-cols-2 gap-4">
                             <InputField
-                                label="電梯營運率 (Or)"
+                                label="展覽區營運率 (DL)"
                                 type="number"
                                 step="0.01"
                                 min="0"
                                 max="1"
-                                value={operationRates.elevatorOR}
-                                onChange={(e) => updateOperationRates('elevatorOR', e.target.value)}
-                                placeholder="0.6"
+                                value={operationRates.exhibition}
+                                onChange={(e) => updateOperationRates('exhibition', e.target.value)}
+                                placeholder="例如: 0.6"
                             />
                             <InputField
-                                label="電扶梯營運率 (Osr)"
+                                label="200人以上大會議室營運率 (D2)"
                                 type="number"
                                 step="0.01"
                                 min="0"
                                 max="1"
-                                value={operationRates.escalatorOR}
-                                onChange={(e) => updateOperationRates('escalatorOR', e.target.value)}
-                                placeholder="0.8"
+                                value={operationRates.largeMeeting}
+                                onChange={(e) => updateOperationRates('largeMeeting', e.target.value)}
+                                placeholder="例如: 0.7"
+                            />
+                            <InputField
+                                label="200人以下會議室營運率 (D3)"
+                                type="number"
+                                step="0.01"
+                                min="0"
+                                max="1"
+                                value={operationRates.smallMeeting}
+                                onChange={(e) => updateOperationRates('smallMeeting', e.target.value)}
+                                placeholder="例如: 0.6"
+                            />
+                            <InputField
+                                label="國家級演藝廳營運率 (G1)"
+                                type="number"
+                                step="0.01"
+                                min="0"
+                                max="1"
+                                value={operationRates.performanceNational}
+                                onChange={(e) => updateOperationRates('performanceNational', e.target.value)}
+                                placeholder="例如: 0.8"
+                            />
+                            <InputField
+                                label="一般級演藝廳營運率 (G2)"
+                                type="number"
+                                step="0.01"
+                                min="0"
+                                max="1"
+                                value={operationRates.performanceGeneral}
+                                onChange={(e) => updateOperationRates('performanceGeneral', e.target.value)}
+                                placeholder="例如: 0.7"
                             />
                         </div>
 
-                        {/* 建築分類營運率說明 */}
+                        {/* 營運率說明 */}
                         <div className="mt-4 p-4 bg-white/5 rounded-xl border border-white/10">
                             <p className="text-sm text-slate-300 mb-2">
-                                <strong className="text-white">建築分類營運率：</strong>
+                                <strong className="text-white">營運率參考值：</strong>
                             </p>
                             <ul className="text-xs text-slate-400 space-y-1 ml-4">
-                                <li>• 辦公場所：0.6 (電梯) / 0.8 (電扶梯)</li>
-                                <li>• 住宿類：0.15 (電梯) / 0.3 (電扶梯)</li>
-                                <li>• 商場百貨：0.6 (電梯) / 0.9 (電扶梯)</li>
-                                <li>• 24hr 營運建築：表列營運率 × 80%</li>
+                                <li>• 展覽區(DL)：通常為 100 部年/台(上限273)</li>
+                                <li>• 200人以上會議室(D2)：通常為 100 部年/台(上限208)</li>
+                                <li>• 200人以下會議室(D3)：通常為 100 部年/台(上限208)</li>
+                                <li>• 國家級演藝廳(G1)：通常為 100 部年/台(上限156)</li>
+                                <li>• 一般級演藝廳(G2)：通常為 100 部年/台(上限156)</li>
                             </ul>
                         </div>
                     </div>
