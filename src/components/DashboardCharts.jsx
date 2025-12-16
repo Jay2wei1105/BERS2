@@ -17,8 +17,23 @@ export function ComparisonRange({ buildingType, yourValue, percentile }) {
         'default': { excellent: 80, good: 120, average: 160, poor: 200, max: 250 }
     };
 
+    // 建築類型中文名稱映射
+    const typeLabels = {
+        'office': '辦公場所',
+        'accommodation': '住宿類',
+        'hotel': '旅館',
+        'medical': '醫療照護',
+        'retail': '商場百貨',
+        'restaurant': '餐飲場所',
+        'entertainment': '娛樂場所',
+        'finance': '金融證券',
+        'edu': '文教',
+        'default': '群公用'
+    };
+
     const range = typeRanges[buildingType] || typeRanges.default;
     const max = range.max;
+    const buildingLabel = typeLabels[buildingType] || typeLabels.default;
 
     // 計算位置百分比
     const position = Math.min((yourValue / max) * 100, 100);
@@ -70,7 +85,7 @@ export function ComparisonRange({ buildingType, yourValue, percentile }) {
                 同類建築能效等比較
             </h3>
             <p className="text-sm text-slate-400 mb-8 relative z-10">
-                群公用 建築能效分布
+                {buildingLabel} 建築能效分布
             </p>
 
             {/* 進度條區域 */}
