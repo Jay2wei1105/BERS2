@@ -1,15 +1,15 @@
-// BERS Dashboard 图表与分析组件
-// Phase 2: 比较区间、趋势图、设备分析
+// BERS Dashboard 圖表與分析組件
+// Phase 2: 比較區間、趨勢圖、設備分析
 
-import React from 'react';
+import React, { useState } from 'react';
 import { AlertCircle, CheckCircle, XCircle } from 'lucide-react';
 
 // ============================================
-// 4. ComparisonRange - 同类建筑比较区间
+// 4. ComparisonRange - 同類建築比較區間
 // ============================================
 
 export function ComparisonRange({ buildingType, yourValue, percentile }) {
-    // 根据建筑类型定义基准范围
+    // 根據建築類型定義基準範圍
     const typeRanges = {
         'office': { excellent: 80, good: 120, average: 160, poor: 200, max: 250 },
         'hotel': { excellent: 100, good: 150, average: 200, poor: 250, max: 300 },
@@ -20,10 +20,10 @@ export function ComparisonRange({ buildingType, yourValue, percentile }) {
     const range = typeRanges[buildingType] || typeRanges.default;
     const max = range.max;
 
-    // 计算位置百分比
+    // 計算位置百分比
     const position = Math.min((yourValue / max) * 100, 100);
 
-    // 确定当前级别
+    // 確定當前級別
     let currentCategory = 'poor';
     let categoryColor = 'text-red-400';
     let categoryLabel = '需改善';
@@ -31,7 +31,7 @@ export function ComparisonRange({ buildingType, yourValue, percentile }) {
     if (yourValue <= range.excellent) {
         currentCategory = 'excellent';
         categoryColor = 'text-emerald-400';
-        categoryLabel = '优秀';
+        categoryLabel = '優秀';
     } else if (yourValue <= range.good) {
         currentCategory = 'good';
         categoryColor = 'text-green-400';
@@ -50,15 +50,15 @@ export function ComparisonRange({ buildingType, yourValue, percentile }) {
         <div className="bg-white/5 backdrop-blur-md border border-white/10 rounded-3xl p-6">
             <h3 className="text-lg font-bold text-white mb-2 flex items-center gap-2">
                 <span className="w-1 h-6 bg-purple-500 rounded-full"></span>
-                同类建筑能效率比较
+                同類建築能效率比較
             </h3>
             <p className="text-sm text-slate-400 mb-6">
-                {buildingType === 'office' ? '办公类' : '其他类型'} 建筑能效分布
+                {buildingType === 'office' ? '辦公類' : '其他類型'} 建築能效分布
             </p>
 
-            {/* 区间条 */}
+            {/* 區間條 */}
             <div className="relative h-16 mb-4">
-                {/* 背景渐变条 */}
+                {/* 背景漸變條 */}
                 <div className="absolute inset-0 rounded-full overflow-hidden flex">
                     <div className="h-full bg-emerald-500/30" style={{ width: `${(range.excellent / max) * 100}%` }}></div>
                     <div className="h-full bg-green-500/30" style={{ width: `${((range.good - range.excellent) / max) * 100}%` }}></div>
@@ -67,28 +67,28 @@ export function ComparisonRange({ buildingType, yourValue, percentile }) {
                     <div className="h-full bg-red-500/30" style={{ width: `${((max - range.poor) / max) * 100}%` }}></div>
                 </div>
 
-                {/* 当前位置标记 */}
+                {/* 當前位置標記 */}
                 <div
                     className="absolute top-0 h-full flex items-center transition-all duration-1000"
                     style={{ left: `${position}%`, transform: 'translateX(-50%)' }}
                 >
                     <div className="relative">
-                        {/* 箭头 */}
+                        {/* 箭頭 */}
                         <div className={`w-0.5 h-20 ${categoryColor.replace('text-', 'bg-')}`}></div>
-                        {/* 值标签 */}
+                        {/* 值標籤 */}
                         <div className={`absolute -top-8 left-1/2 -translate-x-1/2 px-3 py-1 rounded-full ${categoryColor.replace('text-', 'bg-')}/20 border ${categoryColor.replace('text-', 'border-')} whitespace-nowrap`}>
                             <span className={`text-sm font-bold ${categoryColor}`}>{yourValue}</span>
                         </div>
-                        {/* 圆点 */}
+                        {/* 圓點 */}
                         <div className={`absolute -bottom-1 left-1/2 -translate-x-1/2 w-4 h-4 rounded-full ${categoryColor.replace('text-', 'bg-')} border-2 border-white animate-pulse`}></div>
                     </div>
                 </div>
             </div>
 
-            {/* 刻度标签 */}
+            {/* 刻度標籤 */}
             <div className="relative h-6 mb-4">
                 {[
-                    { value: range.excellent, label: '优秀' },
+                    { value: range.excellent, label: '優秀' },
                     { value: range.good, label: '良好' },
                     { value: range.average, label: '一般' },
                     { value: range.poor, label: '待改善' }
@@ -103,14 +103,14 @@ export function ComparisonRange({ buildingType, yourValue, percentile }) {
                 ))}
             </div>
 
-            {/* 统计信息 */}
+            {/* 統計信息 */}
             <div className="grid grid-cols-2 gap-4 mt-6">
                 <div className="text-center p-3 bg-white/5 rounded-xl">
-                    <p className="text-slate-400 text-xs mb-1">您的表现</p>
+                    <p className="text-slate-400 text-xs mb-1">您的表現</p>
                     <p className={`text-lg font-bold ${categoryColor}`}>{categoryLabel}</p>
                 </div>
                 <div className="text-center p-3 bg-white/5 rounded-xl">
-                    <p className="text-slate-400 text-xs mb-1">优于同类</p>
+                    <p className="text-slate-400 text-xs mb-1">優於同類</p>
                     <p className="text-lg font-bold text-white">{percentile}%</p>
                 </div>
             </div>
@@ -119,28 +119,30 @@ export function ComparisonRange({ buildingType, yourValue, percentile }) {
 }
 
 // ============================================
-// 5. ElectricityTrendChart - 用电趋势双线图
+// 5. ElectricityTrendChart - 用電趨勢雙線圖（帶交互）
 // ============================================
 
-export function ElectricityTrendChart({ data, years }) {
+export function ElectricityTrendChart({ data, years, interactive = false }) {
+    const [hoveredIndex, setHoveredIndex] = useState(null);
+
     if (!data || data.length === 0) {
         return (
             <div className="bg-white/5 backdrop-blur-md border border-white/10 rounded-3xl p-6">
-                <p className="text-slate-400 text-center">暂无趋势数据</p>
+                <p className="text-slate-400 text-center">暫無趨勢數據</p>
             </div>
         );
     }
 
-    // 计算最大值用于缩放
+    // 計算最大值用於縮放
     const maxValue = Math.max(...data.flatMap(d => [d.year2023 || 0, d.year2024 || 0]));
     const chartHeight = 200;
 
-    // 计算点的位置
+    // 計算點的位置
     const calculateY = (value) => {
         return chartHeight - (value / maxValue) * chartHeight;
     };
 
-    // 生成路径
+    // 生成路徑
     const generatePath = (yearKey) => {
         return data.map((d, i) => {
             const x = (i / (data.length - 1)) * 100;
@@ -154,21 +156,34 @@ export function ElectricityTrendChart({ data, years }) {
             <div className="flex items-center justify-between mb-6">
                 <h3 className="text-lg font-bold text-white flex items-center gap-2">
                     <span className="w-1 h-6 bg-cyan-500 rounded-full"></span>
-                    用电趋势分析
+                    用電趨勢分析
                 </h3>
                 <div className="flex gap-4">
                     <div className="flex items-center gap-2">
                         <div className="w-3 h-3 rounded-full bg-blue-500"></div>
-                        <span className="text-sm text-slate-400">{years[0] || '2023'}</span>
+                        <span className="text-sm text-slate-400">{years?.[0] || '2023'}</span>
                     </div>
                     <div className="flex items-center gap-2">
                         <div className="w-3 h-3 rounded-full bg-green-500"></div>
-                        <span className="text-sm text-slate-400">{years[1] || '2024'}</span>
+                        <span className="text-sm text-slate-400">{years?.[1] || '2024'}</span>
                     </div>
                 </div>
             </div>
 
-            {/* SVG 图表 */}
+            {/* Hover提示 */}
+            {interactive && hoveredIndex !== null && (
+                <div className="mb-4 p-3 bg-blue-500/10 border border-blue-500/30 rounded-xl">
+                    <div className="flex items-center justify-between">
+                        <span className="text-slate-300 font-medium">{data[hoveredIndex]?.month}</span>
+                        <div className="flex gap-4">
+                            <span className="text-blue-400">{years?.[0]}: {data[hoveredIndex]?.year2023?.toLocaleString()} kWh</span>
+                            <span className="text-green-400">{years?.[1]}: {data[hoveredIndex]?.year2024?.toLocaleString()} kWh</span>
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            {/* SVG 圖表 */}
             <svg viewBox="0 0 100 60" className="w-full" style={{ height: '250px' }}>
                 <defs>
                     <linearGradient id="blueGradient" x1="0%" y1="0%" x2="0%" y2="100%">
@@ -181,7 +196,7 @@ export function ElectricityTrendChart({ data, years }) {
                     </linearGradient>
                 </defs>
 
-                {/* 网格线 */}
+                {/* 網格線 */}
                 {[0, 20, 40, 60, 80, 100].map(y => (
                     <line
                         key={y}
@@ -194,7 +209,7 @@ export function ElectricityTrendChart({ data, years }) {
                     />
                 ))}
 
-                {/* 2023年度线条 */}
+                {/* 2023年度線條 */}
                 <path
                     d={generatePath('year2023')}
                     fill="none"
@@ -203,7 +218,7 @@ export function ElectricityTrendChart({ data, years }) {
                     className="transition-all duration-1000"
                 />
 
-                {/* 2024年度线条 */}
+                {/* 2024年度線條 */}
                 <path
                     d={generatePath('year2024')}
                     fill="none"
@@ -212,32 +227,53 @@ export function ElectricityTrendChart({ data, years }) {
                     className="transition-all duration-1000"
                 />
 
-                {/* 数据点 */}
+                {/* 數據點（交互）*/}
                 {data.map((d, i) => {
                     const x = (i / (data.length - 1)) * 100;
+                    const isHovered = hoveredIndex === i;
                     return (
                         <g key={i}>
+                            {interactive && (
+                                <rect
+                                    x={x - 2}
+                                    y={0}
+                                    width={4}
+                                    height={50}
+                                    fill="transparent"
+                                    onMouseEnter={() => setHoveredIndex(i)}
+                                    onMouseLeave={() => setHoveredIndex(null)}
+                                    style={{ cursor: 'pointer' }}
+                                />
+                            )}
                             <circle
                                 cx={x}
                                 cy={calculateY(d.year2023) * 0.5}
-                                r="0.8"
+                                r={isHovered ? "1.2" : "0.8"}
                                 fill="#3b82f6"
+                                className="transition-all"
                             />
                             <circle
                                 cx={x}
                                 cy={calculateY(d.year2024) * 0.5}
-                                r="0.8"
+                                r={isHovered ? "1.2" : "0.8"}
                                 fill="#10b981"
+                                className="transition-all"
                             />
                         </g>
                     );
                 })}
             </svg>
 
-            {/* 月份标签 */}
+            {/* 月份標籤 */}
             <div className="grid grid-cols-12 gap-1 mt-2">
                 {data.map((d, i) => (
-                    <div key={i} className="text-center text-xs text-slate-500">
+                    <div
+                        key={i}
+                        className={`text-center text-xs ${hoveredIndex === i ? 'text-white font-bold' : 'text-slate-500'} transition-all`}
+                        onMouseEnter={() => interactive && setHoveredIndex(i)}
+                        onMouseLeave={() => interactive && setHoveredIndex(null)}
+                        style={{ cursor: interactive ? 'pointer' : 'default' }}
+                    >
                         {d.month}
                     </div>
                 ))}
@@ -247,33 +283,33 @@ export function ElectricityTrendChart({ data, years }) {
 }
 
 // ============================================
-// 6. EquipmentAnalysis - 设备能耗效率分析
+// 6. EquipmentAnalysis - 設備能耗效率分析
 // ============================================
 
 export function EquipmentAnalysis({ equipment }) {
-    // 默认设备数据
+    // 預設設備數據
     const defaultEquipment = equipment || [
         {
-            name: '中央空调系统 (Chiller)',
+            name: '中央空調系統 (Chiller)',
             efficiency: 45,
-            rating: '一级能效',
-            status: '优',
+            rating: '一級能效',
+            status: '優',
             savingPotential: '低 (已最佳化)',
             color: 'green'
         },
         {
-            name: '办公照明系统',
+            name: '辦公照明系統',
             efficiency: 18,
-            rating: '一级能效',
-            status: '优',
+            rating: '一級能效',
+            status: '優',
             savingPotential: '低',
             color: 'green'
         },
         {
-            name: '电梯直连梯',
+            name: '電梯直連梯',
             efficiency: 8,
-            rating: '三级能效',
-            status: '高 (建议改善)',
+            rating: '三級能效',
+            status: '高 (建議改善)',
             savingPotential: '高',
             color: 'orange'
         }
@@ -289,20 +325,20 @@ export function EquipmentAnalysis({ equipment }) {
         <div className="bg-white/5 backdrop-blur-md border border-white/10 rounded-3xl p-6">
             <h3 className="text-lg font-bold text-white mb-2 flex items-center gap-2">
                 <span className="w-1 h-6 bg-pink-500 rounded-full"></span>
-                重点设备能效检视规
+                重點設備能效檢視
             </h3>
             <p className="text-sm text-slate-400 mb-6">
-                监测主要耗能设备的运转效率与贡献度
+                監測主要耗能設備的運轉效率與貢獻度
             </p>
 
-            {/* 设备列表 */}
+            {/* 設備列表 */}
             <div className="space-y-4">
                 {defaultEquipment.map((eq, index) => (
                     <div
                         key={index}
                         className="p-4 bg-white/5 rounded-xl border border-white/5 hover:border-white/10 transition-all"
                     >
-                        {/* 设备名称和状态 */}
+                        {/* 設備名稱和狀態 */}
                         <div className="flex items-start justify-between mb-3">
                             <div className="flex items-center gap-2">
                                 {getStatusIcon(eq.color)}
@@ -321,10 +357,10 @@ export function EquipmentAnalysis({ equipment }) {
                             </div>
                         </div>
 
-                        {/* 进度条 */}
+                        {/* 進度條 */}
                         <div className="mb-2">
                             <div className="flex justify-between text-xs mb-1">
-                                <span className="text-slate-400">能效等级</span>
+                                <span className="text-slate-400">能效等級</span>
                                 <span className="text-slate-300">{eq.rating}</span>
                             </div>
                             <div className="h-2 bg-white/10 rounded-full overflow-hidden">
@@ -338,9 +374,9 @@ export function EquipmentAnalysis({ equipment }) {
                             </div>
                         </div>
 
-                        {/* 节能潜力 */}
+                        {/* 節能潛力 */}
                         <div className="text-xs text-slate-400">
-                            节能潜力: <span className={eq.savingPotential.includes('高') ? 'text-orange-400' : 'text-green-400'}>
+                            節能潛力: <span className={eq.savingPotential.includes('高') ? 'text-orange-400' : 'text-green-400'}>
                                 {eq.savingPotential}
                             </span>
                         </div>
@@ -348,9 +384,9 @@ export function EquipmentAnalysis({ equipment }) {
                 ))}
             </div>
 
-            {/* 下载详细清单按钮 */}
+            {/* 下載詳細清單按鈕 */}
             <button className="w-full mt-4 px-4 py-2 bg-white/5 hover:bg-white/10 border border-white/10 rounded-xl text-sm text-slate-300 transition-all">
-                下载详细清单
+                下載詳細清單
             </button>
         </div>
     );
